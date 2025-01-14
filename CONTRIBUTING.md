@@ -13,6 +13,9 @@ We welcome pull requests (PRs) for new features, bug fixes, and improvements. Pl
 ### Fixing Active Issues
 Check out our [active issues](https://https://github.com/knoodle-graph/knoodle-engine/issues) for tasks that need attention. If you find something you can help with, feel free to submit a PR with your fix.
 
+### Code Conventions
+The code style is enforced by (.clang-format)[.clang-format] and (.clang-tidy)[.clang-tidy]. Please make sure to run these tools before submitting your PR.
+
 We love that you are interested in helping make Knoodle Engine better. Your contributions are invaluable to us!
 
 Thank you for being a part of our community!
