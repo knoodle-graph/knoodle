@@ -1,0 +1,43 @@
+name: Feature request
+description: Suggest an idea for this project.
+title: '[Feat]: '
+labels: ['feature']
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Follow the guidelines in this template to help us understand your feature request better.
+        - Write a clear and descriptive title for the feature request.
+        - Open one issue per feature request. If you want to suggest multiple features, create separate issues for each.
+
+  - type: textarea
+    attributes:
+      label: Feature description
+      description: |
+        Describe the feature you would like to see implemented.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Use case
+      description: |
+        Explain the use case for the feature. How will it benefit the project?
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Additional context
+      description: |
+        Add any other context or screenshots about the feature request here.
+
+  - type: checkboxes
+    id: terms
+    attributes:
+      label: Code of Conduct
+      description: By submitting this issue, you agree to follow our [Code of Conduct](CODE_OF_CONDUCT.md). 
+      options:
+        - label: I agree to follow this project's Code of Conduct
+          required: true

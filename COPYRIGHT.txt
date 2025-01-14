@@ -1,0 +1,9 @@
+Format:  https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Source: https://github.com/knoodle-graph/knoodle-engine
+Upstream-Name: Knoodle Engine
+Upstream-Contact: Brian Batista <brian.batista@knoodle-graph.org>
+
+Files: *
+Comment: Knoodle Engine
+Copyright: 2025-present, Knoodle Graph
+License: MIT
