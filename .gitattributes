@@ -1,0 +1,7 @@
+*.h linguist-language=C++
+*.inc linguist-language=C++
+third-party/* linguist-vendored
+
+* text=auto eol=lf
+*.bat eol=crlf
+*.sh eol=lf

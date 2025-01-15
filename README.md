@@ -1,5 +1,8 @@
 # Knoodle
 
+![GitHub Release](https://img.shields.io/github/v/release/knoodle-graph/knoodle?display_name=release&style=flat)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
+
 Knoodle is a Free Open-Source alternative for graph-based texture designers. It is a tool for creating procedural textures using a node-based graph editor. It is designed to be easy to use, to be able to create complex textures with a minimum of effort, and to be pluggable to any game engine and front-end.
 
 ## Installation
