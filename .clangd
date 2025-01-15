@@ -6,4 +6,4 @@ If:
   PathMatch: third-party/.*
 
 Diagnostics:
-  Suppress: "*"  # Disable all diagnostics for thirdparty code
+  Suppress: "*"  # Disable all diagnostics for third party code
