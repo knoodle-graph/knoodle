@@ -11,6 +11,10 @@ endif()
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 ###########################################################
 # Project settings                                        #
@@ -59,15 +63,15 @@ add_library(knoodle::knoodle-options ALIAS knoodle-options)
 ###########################################################
 
 configure_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/include/knoodle/version.hpp.in"
+  "${CMAKE_CURRENT_SOURCE_DIR}/source/knoodle/public/version.hpp.in"
   "${CMAKE_CURRENT_BINARY_DIR}/include/knoodle/version.hpp"
   ESCAPE_QUOTES)
 
 ###########################################################
-# Add subdirectories                                      #
+# Add intern subdirectories                               #
 ###########################################################
 
-add_subdirectory(src)
+add_subdirectory(source)
 
 include(CTest)
 
@@ -88,5 +92,11 @@ include(GNUInstallDirs)
 set(CPACK_PACKAGE_FILE_NAME
   "${CMAKE_PROJECT_NAME}-${CMAKE_PROJECT_VERSION}-${GIT_SHORT_SHA}-${CMAKE_SYSTEM_NAME}-${CMAKE_BUILD_TYPE}-${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}"
 )
+
+set(CPACK_PACKAGE_VENDOR "knoodle")
+set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
+set(CPACK_GENERATOR "ZIP")
+set(CPACK_THREADS 0)
 
 include(CPack)
