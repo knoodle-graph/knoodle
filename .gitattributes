@@ -12,7 +12,7 @@
 ###############################
 *.h linguist-language=C++
 *.inc linguist-language=C++
-third-party/* linguist-vendored
+third_party/* linguist-vendored
 
 ###############################
 # Git Large File System (LFS) #

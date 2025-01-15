@@ -3,7 +3,7 @@ default_language_version:
 
 exclude: |
   (?x)^(
-    .*third-party/.*
+    .*third_party/.*
   )$
 
 repos:
