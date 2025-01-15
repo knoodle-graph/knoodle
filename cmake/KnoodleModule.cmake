@@ -24,7 +24,7 @@ function(knoodle_create_module)
   # Set the module properties
   target_include_directories(${KNOODLE_MODULE_NAME}
     PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/public>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
 
   # Set dependencies
@@ -60,9 +60,6 @@ function(knoodle_create_module)
     RUNTIME DESTINATION bin
     PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${KNOODLE_MODULE_NAME}" COMPONENT dev)
 
-  install(FILES
-    ${PROJECT_BINARY_DIR}/source/${KNOODLE_MODULE_NAME}/${KNOODLE_MODULE_NAME}_export.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-
   include(CMakePackageConfigHelpers)
   write_basic_package_version_file(
     "${CMAKE_CURRENT_BINARY_DIR}/${KNOODLE_MODULE_NAME}ConfigVersion.cmake"
@@ -73,5 +70,34 @@ function(knoodle_create_module)
     "${CMAKE_CURRENT_SOURCE_DIR}/cmake/${KNOODLE_MODULE_NAME}-config.cmake.in"
     "${CMAKE_CURRENT_BINARY_DIR}/${KNOODLE_MODULE_NAME}-config.cmake"
     INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${KNOODLE_MODULE_NAME}")
+
+endfunction()
+
+function(knoodle_create_tests)
+  find_package(doctest REQUIRED)
+
+  set(_ONE_VALUE_ARGS
+    # module name
+    NAME
+    NAMESPACE)
+
+  set(_MULTI_VALUE_ARGS
+    # module dependencies
+    DEPENDS)
+
+  set(_OPTION_ARGS)
+
+  cmake_parse_arguments(KNOODLE_TESTS
+    "${_OPTION_ARGS}"
+    "${_ONE_VALUE_ARGS}"
+    "${_MULTI_VALUE_ARGS}"
+    ${ARGN})
+
+  add_executable(${KNOODLE_TESTS_NAME})
+
+  target_link_libraries(${KNOODLE_TESTS_NAME}
+    PRIVATE
+    doctest
+    ${KNOODLE_TESTS_DEPENDS})
 
 endfunction()
