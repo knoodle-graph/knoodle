@@ -1,5 +1,5 @@
 /**************************************************************************/
-/* kn-math-test.cpp                                                       */
+/* allocator-test.cpp                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                                Knoodle                                 */
@@ -27,41 +27,65 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest/doctest.h>
 
-#include "math/kn-math.hpp"
+#include "memory/heap-allocator.hpp"
 
-TEST_CASE("Testing kn::math::rsqrt")
+TEST_CASE("HeapAllocator::get_allocated_size")
 {
-  SUBCASE("Test with positive numbers")
-  {
-    CHECK(doctest::Approx(kn::math::rsqrt(4.0)) == 0.5);
-    CHECK(doctest::Approx(kn::math::rsqrt(9.0)) == 0.333333);
-    CHECK(doctest::Approx(kn::math::rsqrt(16.0)) == 0.25);
-  }
-
-  SUBCASE("Test with small positive numbers")
-  {
-    CHECK(doctest::Approx(kn::math::rsqrt(0.25)) == 2.0);
-    CHECK(doctest::Approx(kn::math::rsqrt(0.01)) == 10.0);
-  }
-
-  SUBCASE("Test with edge cases") { CHECK(doctest::Approx(kn::math::rsqrt(1.0)) == 1.0); }
+  auto allocator = kn::HeapAllocator::get_instance();
+  CHECK(allocator->get_allocated_size() == 0);
 }
 
-TEST_CASE("Testing kn::math::floor_to")
+TEST_CASE("HeapAllocator::get_deallocated_size")
 {
-  SUBCASE("Test with positive numbers")
+  auto allocator = kn::HeapAllocator::get_instance();
+  CHECK(allocator->get_deallocated_size() == 0);
+}
+
+TEST_CASE("HeapAllocator::get_total_size")
+{
+  auto allocator = kn::HeapAllocator::get_instance();
+  CHECK(allocator->get_total_size() == 0);
+}
+
+TEST_CASE("HeapAllocator::allocate and deallocate")
+{
+  auto allocator = kn::HeapAllocator::get_instance();
+
+  SUBCASE("Allocate and deallocate single int")
   {
-    CHECK(kn::math::floor_to<int32_t>(4.0) == 4);
-    CHECK(kn::math::floor_to<int32_t>(4.5) == 4);
-    CHECK(kn::math::floor_to<int32_t>(4.9) == 4);
+    int *ptr = allocator->allocate<int>();
+    REQUIRE(ptr != nullptr);
+    CHECK(allocator->get_allocated_size() == sizeof(int));
+    CHECK(allocator->get_total_size() == sizeof(int));
+
+    allocator->deallocate(ptr);
+    CHECK(allocator->get_deallocated_size() == sizeof(int));
+    CHECK(allocator->get_total_size() == 0);
   }
-  SUBCASE("Test with negative numbers")
+
+  SUBCASE("Allocate and deallocate array of ints")
   {
-    CHECK(kn::math::floor_to<int32_t>(-4.0) == -4);
-    CHECK(kn::math::floor_to<int32_t>(-4.5) == -5);
-    CHECK(kn::math::floor_to<int32_t>(-4.9) == -5);
+    const size_t count = 10;
+    int *ptr = allocator->allocate<int>(count);
+    REQUIRE(ptr != nullptr);
+
+    allocator->deallocate(ptr, count);
+    CHECK(allocator->get_total_size() == 0);
   }
-  SUBCASE("Test with zero") { CHECK(kn::math::floor_to<int32_t>(0.0) == 0); }
+}
+
+TEST_CASE("HeapAllocator::get_instance")
+{
+  auto allocator1 = kn::HeapAllocator::get_instance();
+  auto allocator2 = kn::HeapAllocator::get_instance();
+  CHECK(allocator1 == allocator2);
+}
+
+TEST_CASE("HeapAllocator zero leaks")
+{
+  auto allocator = kn::HeapAllocator::get_instance();
+  CHECK(allocator->get_total_size() == 0);
 }

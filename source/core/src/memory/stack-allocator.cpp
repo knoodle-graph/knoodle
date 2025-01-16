@@ -1,5 +1,5 @@
 /**************************************************************************/
-/* kn-math-test.cpp                                                       */
+/* stack-allocator.cpp                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                                Knoodle                                 */
@@ -27,41 +27,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include <doctest/doctest.h>
+#include "memory/stack-allocator.hpp"
 
-#include "math/kn-math.hpp"
+namespace kn {
+StackAllocator::StackAllocator() : _start(nullptr), _end(nullptr), _current(nullptr) {}
 
-TEST_CASE("Testing kn::math::rsqrt")
+
+StackAllocator::~StackAllocator()
 {
-  SUBCASE("Test with positive numbers")
-  {
-    CHECK(doctest::Approx(kn::math::rsqrt(4.0)) == 0.5);
-    CHECK(doctest::Approx(kn::math::rsqrt(9.0)) == 0.333333);
-    CHECK(doctest::Approx(kn::math::rsqrt(16.0)) == 0.25);
-  }
+  assert(_start == _current);
 
-  SUBCASE("Test with small positive numbers")
-  {
-    CHECK(doctest::Approx(kn::math::rsqrt(0.25)) == 2.0);
-    CHECK(doctest::Approx(kn::math::rsqrt(0.01)) == 10.0);
-  }
-
-  SUBCASE("Test with edge cases") { CHECK(doctest::Approx(kn::math::rsqrt(1.0)) == 1.0); }
+  if (_start) { free(_start); }
 }
 
-TEST_CASE("Testing kn::math::floor_to")
+
+void StackAllocator::initialize(size_t size)
 {
-  SUBCASE("Test with positive numbers")
-  {
-    CHECK(kn::math::floor_to<int32_t>(4.0) == 4);
-    CHECK(kn::math::floor_to<int32_t>(4.5) == 4);
-    CHECK(kn::math::floor_to<int32_t>(4.9) == 4);
-  }
-  SUBCASE("Test with negative numbers")
-  {
-    CHECK(kn::math::floor_to<int32_t>(-4.0) == -4);
-    CHECK(kn::math::floor_to<int32_t>(-4.5) == -5);
-    CHECK(kn::math::floor_to<int32_t>(-4.9) == -5);
-  }
-  SUBCASE("Test with zero") { CHECK(kn::math::floor_to<int32_t>(0.0) == 0); }
+  _start = malloc(size);
+  _current = _start;
+  _end = reinterpret_cast<void *>(reinterpret_cast<size_t>(_start) + size);
 }
+}// namespace kn

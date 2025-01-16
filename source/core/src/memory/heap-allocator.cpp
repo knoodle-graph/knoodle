@@ -1,5 +1,5 @@
 /**************************************************************************/
-/* kn-math-test.cpp                                                       */
+/* heap-allocator.cpp                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                                Knoodle                                 */
@@ -27,41 +27,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include <doctest/doctest.h>
+#include "memory/heap-allocator.hpp"
 
-#include "math/kn-math.hpp"
+namespace kn {
+std::unique_ptr<HeapAllocator> HeapAllocator::instance;
 
-TEST_CASE("Testing kn::math::rsqrt")
+HeapAllocator *HeapAllocator::get_instance()
 {
-  SUBCASE("Test with positive numbers")
-  {
-    CHECK(doctest::Approx(kn::math::rsqrt(4.0)) == 0.5);
-    CHECK(doctest::Approx(kn::math::rsqrt(9.0)) == 0.333333);
-    CHECK(doctest::Approx(kn::math::rsqrt(16.0)) == 0.25);
-  }
-
-  SUBCASE("Test with small positive numbers")
-  {
-    CHECK(doctest::Approx(kn::math::rsqrt(0.25)) == 2.0);
-    CHECK(doctest::Approx(kn::math::rsqrt(0.01)) == 10.0);
-  }
-
-  SUBCASE("Test with edge cases") { CHECK(doctest::Approx(kn::math::rsqrt(1.0)) == 1.0); }
+  if (!instance) { instance = std::make_unique<HeapAllocator>(); }
+  return instance.get();
 }
-
-TEST_CASE("Testing kn::math::floor_to")
-{
-  SUBCASE("Test with positive numbers")
-  {
-    CHECK(kn::math::floor_to<int32_t>(4.0) == 4);
-    CHECK(kn::math::floor_to<int32_t>(4.5) == 4);
-    CHECK(kn::math::floor_to<int32_t>(4.9) == 4);
-  }
-  SUBCASE("Test with negative numbers")
-  {
-    CHECK(kn::math::floor_to<int32_t>(-4.0) == -4);
-    CHECK(kn::math::floor_to<int32_t>(-4.5) == -5);
-    CHECK(kn::math::floor_to<int32_t>(-4.9) == -5);
-  }
-  SUBCASE("Test with zero") { CHECK(kn::math::floor_to<int32_t>(0.0) == 0); }
-}
+}// namespace kn

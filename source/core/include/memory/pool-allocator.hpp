@@ -1,5 +1,5 @@
 /**************************************************************************/
-/* kn-math-test.cpp                                                       */
+/* pool-allocator.hpp                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                                Knoodle                                 */
@@ -27,41 +27,55 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include <doctest/doctest.h>
+#pragma once
 
-#include "math/kn-math.hpp"
+#include "memory/heap-allocator.hpp"
+#include <vector>
 
-TEST_CASE("Testing kn::math::rsqrt")
+namespace kn {
+template<typename T> class PoolAllocator
 {
-  SUBCASE("Test with positive numbers")
+  PoolAllocator(const PoolAllocator &) = delete;
+  PoolAllocator &operator=(const PoolAllocator &) = delete;
+
+public:
+  PoolAllocator(size_t blockCount)
+    : _blockSize(sizeof(T)), _blockCount(blockCount), _pool(nullptr), _freeBlocks(blockCount)
   {
-    CHECK(doctest::Approx(kn::math::rsqrt(4.0)) == 0.5);
-    CHECK(doctest::Approx(kn::math::rsqrt(9.0)) == 0.333333);
-    CHECK(doctest::Approx(kn::math::rsqrt(16.0)) == 0.25);
+    uint8_t *poolData = HeapAllocator::get_instance()->allocate<uint8_t>(blockCount);
+    _pool = reinterpret_cast<void *>(poolData);
+    for (size_t i = 0; i < blockCount; ++i) { _freeBlocks[i] = (T *)((uint8_t *)_pool + i * _blockSize); }
   }
 
-  SUBCASE("Test with small positive numbers")
+  ~PoolAllocator()
   {
-    CHECK(doctest::Approx(kn::math::rsqrt(0.25)) == 2.0);
-    CHECK(doctest::Approx(kn::math::rsqrt(0.01)) == 10.0);
+    if (_pool) { free(_pool); }
   }
 
-  SUBCASE("Test with edge cases") { CHECK(doctest::Approx(kn::math::rsqrt(1.0)) == 1.0); }
-}
+  T *allocate()
+  {
+    constexpr size_t alignment = alignof(T);
 
-TEST_CASE("Testing kn::math::floor_to")
-{
-  SUBCASE("Test with positive numbers")
-  {
-    CHECK(kn::math::floor_to<int32_t>(4.0) == 4);
-    CHECK(kn::math::floor_to<int32_t>(4.5) == 4);
-    CHECK(kn::math::floor_to<int32_t>(4.9) == 4);
+    if (ensure(!_freeBlocks.empty())) {
+      void *ptr = _freeBlocks.back();
+      new (ptr) T;
+      _freeBlocks.pop_back();
+      return ptr;
+    }
+
+    return nullptr;
   }
-  SUBCASE("Test with negative numbers")
+
+  void deallocate(T *ptr)
   {
-    CHECK(kn::math::floor_to<int32_t>(-4.0) == -4);
-    CHECK(kn::math::floor_to<int32_t>(-4.5) == -5);
-    CHECK(kn::math::floor_to<int32_t>(-4.9) == -5);
+    delete ptr;
+    _freeBlocks.push_back(ptr);
   }
-  SUBCASE("Test with zero") { CHECK(kn::math::floor_to<int32_t>(0.0) == 0); }
-}
+
+private:
+  size_t _blockSize;
+  size_t _blockCount;
+  T *_pool;
+  std::vector<void *> _freeBlocks;
+};
+}// namespace kn

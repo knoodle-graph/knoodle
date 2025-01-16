@@ -1,5 +1,5 @@
 /**************************************************************************/
-/* kn-math-test.cpp                                                       */
+/* buddy-allocator.cpp                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                                Knoodle                                 */
@@ -27,41 +27,52 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include <doctest/doctest.h>
+#include "memory/buddy-allocator.hpp"
 
-#include "math/kn-math.hpp"
-
-TEST_CASE("Testing kn::math::rsqrt")
+namespace kn {
+BuddyAllocator::BuddyAllocator(size_t size) : _size(align_to_power_of_two(size))
 {
-  SUBCASE("Test with positive numbers")
-  {
-    CHECK(doctest::Approx(kn::math::rsqrt(4.0)) == 0.5);
-    CHECK(doctest::Approx(kn::math::rsqrt(9.0)) == 0.333333);
-    CHECK(doctest::Approx(kn::math::rsqrt(16.0)) == 0.25);
-  }
-
-  SUBCASE("Test with small positive numbers")
-  {
-    CHECK(doctest::Approx(kn::math::rsqrt(0.25)) == 2.0);
-    CHECK(doctest::Approx(kn::math::rsqrt(0.01)) == 10.0);
-  }
-
-  SUBCASE("Test with edge cases") { CHECK(doctest::Approx(kn::math::rsqrt(1.0)) == 1.0); }
+  _memory = malloc(_size);
+  _free_list.resize(2 * _size - 1, true);
 }
 
-TEST_CASE("Testing kn::math::floor_to")
+BuddyAllocator::~BuddyAllocator() { free(_memory); }
+
+void *BuddyAllocator::allocate(size_t size)
 {
-  SUBCASE("Test with positive numbers")
-  {
-    CHECK(kn::math::floor_to<int32_t>(4.0) == 4);
-    CHECK(kn::math::floor_to<int32_t>(4.5) == 4);
-    CHECK(kn::math::floor_to<int32_t>(4.9) == 4);
+  size = align_to_power_of_two(size);
+  size_t index = 0;
+  size_t level_size = _size;
+
+  while (level_size > size) {
+    if (_free_list[get_left_child_index(index)]) {
+      index = get_left_child_index(index);
+    } else {
+      index = get_right_child_index(index);
+    }
+    level_size /= 2;
   }
-  SUBCASE("Test with negative numbers")
-  {
-    CHECK(kn::math::floor_to<int32_t>(-4.0) == -4);
-    CHECK(kn::math::floor_to<int32_t>(-4.5) == -5);
-    CHECK(kn::math::floor_to<int32_t>(-4.9) == -5);
-  }
-  SUBCASE("Test with zero") { CHECK(kn::math::floor_to<int32_t>(0.0) == 0); }
+
+  if (!_free_list[index]) { return nullptr; }
+
+  _free_list[index] = false;
+  return static_cast<char *>(_memory) + (index - (1ull << (size_t(log2(index + 1ull))))) * size;
 }
+
+void BuddyAllocator::deallocate(void *ptr)
+{
+  size_t offset = static_cast<char *>(ptr) - static_cast<char *>(_memory);
+  size_t index = offset / _size + (1ull << ((size_t(log2(offset / _size + 1ull))) - 1ull));
+
+  while (index > 0) {
+    _free_list[index] = true;
+    size_t buddy_index = get_buddy_index(index);
+    if (_free_list[buddy_index]) {
+      index = get_parent_index(index);
+    } else {
+      break;
+    }
+  }
+  _free_list[index] = true;
+}
+}// namespace kn

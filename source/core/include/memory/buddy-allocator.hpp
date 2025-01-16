@@ -1,5 +1,5 @@
 /**************************************************************************/
-/* kn-math-test.cpp                                                       */
+/* buddy-allocator.hpp                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                                Knoodle                                 */
@@ -27,41 +27,40 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include <doctest/doctest.h>
+#pragma once
 
-#include "math/kn-math.hpp"
+#include "memory/heap-allocator.hpp"
+#include <cassert>
+#include <cmath>
+#include <vector>
 
-TEST_CASE("Testing kn::math::rsqrt")
+namespace kn {
+
+class BuddyAllocator
 {
-  SUBCASE("Test with positive numbers")
-  {
-    CHECK(doctest::Approx(kn::math::rsqrt(4.0)) == 0.5);
-    CHECK(doctest::Approx(kn::math::rsqrt(9.0)) == 0.333333);
-    CHECK(doctest::Approx(kn::math::rsqrt(16.0)) == 0.25);
-  }
+  BuddyAllocator(const BuddyAllocator &) = delete;
+  BuddyAllocator &operator=(const BuddyAllocator &) = delete;
 
-  SUBCASE("Test with small positive numbers")
-  {
-    CHECK(doctest::Approx(kn::math::rsqrt(0.25)) == 2.0);
-    CHECK(doctest::Approx(kn::math::rsqrt(0.01)) == 10.0);
-  }
+public:
+  BuddyAllocator(size_t size);
+  ~BuddyAllocator();
 
-  SUBCASE("Test with edge cases") { CHECK(doctest::Approx(kn::math::rsqrt(1.0)) == 1.0); }
-}
+  void *allocate(size_t size);
+  void deallocate(void *ptr);
 
-TEST_CASE("Testing kn::math::floor_to")
-{
-  SUBCASE("Test with positive numbers")
-  {
-    CHECK(kn::math::floor_to<int32_t>(4.0) == 4);
-    CHECK(kn::math::floor_to<int32_t>(4.5) == 4);
-    CHECK(kn::math::floor_to<int32_t>(4.9) == 4);
-  }
-  SUBCASE("Test with negative numbers")
-  {
-    CHECK(kn::math::floor_to<int32_t>(-4.0) == -4);
-    CHECK(kn::math::floor_to<int32_t>(-4.5) == -5);
-    CHECK(kn::math::floor_to<int32_t>(-4.9) == -5);
-  }
-  SUBCASE("Test with zero") { CHECK(kn::math::floor_to<int32_t>(0.0) == 0); }
-}
+  constexpr size_t get_size() const { return _size; }
+  constexpr size_t get_free_size() const { return _free_list.size(); }
+  constexpr size_t get_used_size() const { return _size - get_free_size(); }
+
+private:
+  constexpr size_t align_to_power_of_two(size_t size) { return size == 0 ? 1 : (1 << (int(log2(size - 1)) + 1)); }
+  constexpr size_t get_buddy_index(size_t index) { return index % 2 == 0 ? index - 1 : index + 1; }
+  constexpr size_t get_parent_index(size_t index) { return (index - 1) / 2; }
+  constexpr size_t get_left_child_index(size_t index) { return 2 * index + 1; }
+  constexpr size_t get_right_child_index(size_t index) { return 2 * index + 2; }
+
+  std::vector<bool> _free_list;
+  void *_memory;
+  size_t _size;
+};
+}// namespace kn

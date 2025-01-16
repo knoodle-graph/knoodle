@@ -1,5 +1,5 @@
 /**************************************************************************/
-/* kn-math-test.cpp                                                       */
+/* stack-allocator.hpp                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                                Knoodle                                 */
@@ -27,41 +27,50 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include <doctest/doctest.h>
+#pragma once
 
-#include "math/kn-math.hpp"
+#include "kn-assert.hpp"
 
-TEST_CASE("Testing kn::math::rsqrt")
+#include <memory>
+#include <new>
+#include <stdlib.h>
+
+namespace kn {
+class StackAllocator
 {
-  SUBCASE("Test with positive numbers")
+  StackAllocator(const StackAllocator &) = delete;
+  StackAllocator &operator=(const StackAllocator &) = delete;
+
+public:
+  StackAllocator();
+  ~StackAllocator();
+
+  void initialize(size_t size);
+
+  void *allocate(size_t size, size_t alignment = 1)
   {
-    CHECK(doctest::Approx(kn::math::rsqrt(4.0)) == 0.5);
-    CHECK(doctest::Approx(kn::math::rsqrt(9.0)) == 0.333333);
-    CHECK(doctest::Approx(kn::math::rsqrt(16.0)) == 0.25);
+    if (ensure(reinterpret_cast<size_t>(_current) + size <= reinterpret_cast<size_t>(_end))) {
+      size_t ptr = reinterpret_cast<size_t>(_current);
+      size_t mod = (alignment - ptr % alignment) % alignment;
+
+      ptr += mod;
+      _current = reinterpret_cast<void *>(ptr + size);
+      return reinterpret_cast<void *>(ptr);
+    }
+    return nullptr;
   }
 
-  SUBCASE("Test with small positive numbers")
+  void deallocate(void *ptr)
   {
-    CHECK(doctest::Approx(kn::math::rsqrt(0.25)) == 2.0);
-    CHECK(doctest::Approx(kn::math::rsqrt(0.01)) == 10.0);
+    assert(ptr < _current);
+    _current = ptr;
   }
 
-  SUBCASE("Test with edge cases") { CHECK(doctest::Approx(kn::math::rsqrt(1.0)) == 1.0); }
-}
+  inline size_t get_size() const { return reinterpret_cast<size_t>(_end) - reinterpret_cast<size_t>(_start); }
 
-TEST_CASE("Testing kn::math::floor_to")
-{
-  SUBCASE("Test with positive numbers")
-  {
-    CHECK(kn::math::floor_to<int32_t>(4.0) == 4);
-    CHECK(kn::math::floor_to<int32_t>(4.5) == 4);
-    CHECK(kn::math::floor_to<int32_t>(4.9) == 4);
-  }
-  SUBCASE("Test with negative numbers")
-  {
-    CHECK(kn::math::floor_to<int32_t>(-4.0) == -4);
-    CHECK(kn::math::floor_to<int32_t>(-4.5) == -5);
-    CHECK(kn::math::floor_to<int32_t>(-4.9) == -5);
-  }
-  SUBCASE("Test with zero") { CHECK(kn::math::floor_to<int32_t>(0.0) == 0); }
-}
+private:
+  void *_start;
+  void *_end;
+  void *_current;
+};
+}// namespace kn

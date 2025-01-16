@@ -1,5 +1,5 @@
 /**************************************************************************/
-/* kn-math-test.cpp                                                       */
+/* kn-assert.hpp                                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                                Knoodle                                 */
@@ -27,41 +27,32 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include <doctest/doctest.h>
+#pragma once
 
-#include "math/kn-math.hpp"
+#include <iostream>
+#include <assert.h>
 
-TEST_CASE("Testing kn::math::rsqrt")
-{
-  SUBCASE("Test with positive numbers")
-  {
-    CHECK(doctest::Approx(kn::math::rsqrt(4.0)) == 0.5);
-    CHECK(doctest::Approx(kn::math::rsqrt(9.0)) == 0.333333);
-    CHECK(doctest::Approx(kn::math::rsqrt(16.0)) == 0.25);
-  }
+#if defined(_MSC_VER)
+#include <intrin.h>
+#define DEBUG_BREAK() (__nop(), __debugbreak())
+#else
+#include <signal.h>
+#define DEBUG_BREAK() raise(SIGTRAP)
+#endif
 
-  SUBCASE("Test with small positive numbers")
-  {
-    CHECK(doctest::Approx(kn::math::rsqrt(0.25)) == 2.0);
-    CHECK(doctest::Approx(kn::math::rsqrt(0.01)) == 10.0);
-  }
+#define ensure(condition)                                             \
+  ((condition) || ([](const char *cond, const char *file, int line) { \
+    std::cerr << "Ensure failed: (" << cond << "), "                  \
+              << "file " << file << ", line " << line << '\n';        \
+    DEBUG_BREAK();                                                    \
+    return false;                                                     \
+  }(#condition, __FILE__, __LINE__)))
 
-  SUBCASE("Test with edge cases") { CHECK(doctest::Approx(kn::math::rsqrt(1.0)) == 1.0); }
-}
-
-TEST_CASE("Testing kn::math::floor_to")
-{
-  SUBCASE("Test with positive numbers")
-  {
-    CHECK(kn::math::floor_to<int32_t>(4.0) == 4);
-    CHECK(kn::math::floor_to<int32_t>(4.5) == 4);
-    CHECK(kn::math::floor_to<int32_t>(4.9) == 4);
-  }
-  SUBCASE("Test with negative numbers")
-  {
-    CHECK(kn::math::floor_to<int32_t>(-4.0) == -4);
-    CHECK(kn::math::floor_to<int32_t>(-4.5) == -5);
-    CHECK(kn::math::floor_to<int32_t>(-4.9) == -5);
-  }
-  SUBCASE("Test with zero") { CHECK(kn::math::floor_to<int32_t>(0.0) == 0); }
-}
+#define ensure_msg(condition, msg)                                                     \
+  ((condition) || ([](const char *cond, const char *file, int line, const char *msg) { \
+    std::cerr << "Ensure failed: (" << cond << "), "                                   \
+              << "file " << file << ", line " << line << '\n'                          \
+              << "Message: " << msg << '\n';                                           \
+    DEBUG_BREAK();                                                                     \
+    return false;                                                                      \
+  }(#condition, __FILE__, __LINE__, msg)))
