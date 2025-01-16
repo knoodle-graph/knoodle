@@ -1,5 +1,13 @@
 # Knoodle
 
+<div align="center">
+    <a href="https://knoagraph.org">
+        <img src="knoodle-splash.svg" alt="Knoodle Splash" width="80%" alt="Knoodle logo"/>
+    </a>
+</div>
+
+---
+
 ![GitHub Release](https://img.shields.io/github/v/release/knoodle-graph/knoodle?display_name=release&style=flat)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
 
