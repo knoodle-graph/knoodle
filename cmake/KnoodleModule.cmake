@@ -19,28 +19,37 @@ function(knoodle_create_module)
     ${ARGN})
 
   # Create the module
-  add_library(${KNOODLE_MODULE_NAME} SHARED)
+  add_library(${KNOODLE_MODULE_NAME} STATIC)
+
+  target_compile_features(${KNOODLE_MODULE_NAME} INTERFACE cxx_std_${CMAKE_CXX_STANDARD})
+
+  target_compile_options(${KNOODLE_MODULE_NAME}
+    PRIVATE
+      $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
+      $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -pedantic -Werror>)
 
   # Set the module properties
   target_include_directories(${KNOODLE_MODULE_NAME}
     PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/public>
-    $<INSTALL_INTERFACE:include>)
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<INSTALL_INTERFACE:include>)
 
   # Set dependencies
   target_link_libraries(${KNOODLE_MODULE_NAME}
     PUBLIC
-    ${KNOODLE_MODULE_PUBLIC_DEPENDENCIES}
+      ${KNOODLE_MODULE_PUBLIC_DEPENDENCIES}
     PRIVATE
-    ${KNOODLE_MODULE_PRIVATE_DEPENDENCIES})
+      ${KNOODLE_MODULE_PRIVATE_DEPENDENCIES})
 
   # Setup precompiled headers
   if(KNOODLE_MODULE_ENABLE_PCH)
     target_precompile_headers(${KNOODLE_MODULE_NAME}
       INTERFACE
-      <vector>
-      <string>
-      <utility>)
+        <assert.h>
+        <concepts>
+        <string>
+        <utility>
+        <vector>)
   endif()
 
   # Setup export headers
@@ -60,9 +69,6 @@ function(knoodle_create_module)
     RUNTIME DESTINATION bin
     PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${KNOODLE_MODULE_NAME}" COMPONENT dev)
 
-  install(FILES
-    ${PROJECT_BINARY_DIR}/source/${KNOODLE_MODULE_NAME}/${KNOODLE_MODULE_NAME}_export.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-
   include(CMakePackageConfigHelpers)
   write_basic_package_version_file(
     "${CMAKE_CURRENT_BINARY_DIR}/${KNOODLE_MODULE_NAME}ConfigVersion.cmake"
@@ -74,4 +80,35 @@ function(knoodle_create_module)
     "${CMAKE_CURRENT_BINARY_DIR}/${KNOODLE_MODULE_NAME}-config.cmake"
     INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${KNOODLE_MODULE_NAME}")
 
+endfunction()
+
+function(knoodle_create_tests)
+  if(BUILD_TESTING)
+    find_package(doctest REQUIRED)
+
+    set(_ONE_VALUE_ARGS
+      # module name
+      NAME
+      NAMESPACE)
+
+    set(_MULTI_VALUE_ARGS
+      # module dependencies
+      DEPENDS)
+
+    set(_OPTION_ARGS)
+
+    cmake_parse_arguments(KNOODLE_TESTS
+      "${_OPTION_ARGS}"
+      "${_ONE_VALUE_ARGS}"
+      "${_MULTI_VALUE_ARGS}"
+      ${ARGN})
+
+    add_executable(${KNOODLE_TESTS_NAME})
+    target_compile_features(${KNOODLE_TESTS_NAME} INTERFACE cxx_std_${CMAKE_CXX_STANDARD})
+
+    target_link_libraries(${KNOODLE_TESTS_NAME}
+      PRIVATE
+      doctest
+      ${KNOODLE_TESTS_DEPENDS})
+  endif()
 endfunction()

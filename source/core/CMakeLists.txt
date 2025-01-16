@@ -3,8 +3,20 @@ knoodle_create_module(
   NAMESPACE knoodle
   ENABLE_PCH On)
 
-target_sources(
-  core
+target_sources(core
   PRIVATE
-  private/core.cpp
-)
+    src/core.cpp
+
+  PUBLIC
+  FILE_SET HEADERS
+  BASE_DIRS include
+  FILES
+    include/math/kn-math.hpp)
+
+knoodle_create_tests(
+  NAME core_test
+  DEPENDS core)
+
+target_sources(core_test
+  PRIVATE
+    "tests/math/kn-math-test.cpp")

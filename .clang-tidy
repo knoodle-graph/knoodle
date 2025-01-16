@@ -2,5 +2,5 @@ Checks:
   - -*
 HeaderFileExtensions: [h, hh, hpp, hxx, inc]
 ImplementationFileExtensions: [c, cc, cpp, cxx, m, mm, java]
-HeaderFilterRegex: (src|include)/
+HeaderFilterRegex: (source)/
 FormatStyle: file

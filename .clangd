@@ -1,9 +1,0 @@
-# https://clangd.llvm.org/config
-
----
-
-If:
-  PathMatch: third_party/.*
-
-Diagnostics:
-  Suppress: "*"  # Disable all diagnostics for third party code
