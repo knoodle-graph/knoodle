@@ -1,18 +1,12 @@
-# FindDocTest.cmake
-
-# Locate doctest.h
-find_path(DOCTEST_INCLUDE_DIR doctest.h
-    PATHS ${PROJECT_SOURCE_DIR}/third_party/doctest/include/doctest
-    NO_DEFAULT_PATH
+find_path(doctest_INCLUDE_DIR doctest/doctest.h
+  HINTS
+    ${PROJECT_SOURCE_DIR}/third_party/doctest/include
 )
 
-# Handle the case where doctest.h is not found
-if (NOT DOCTEST_INCLUDE_DIR)
-    message(FATAL_ERROR "Could not find doctest.h in third_party/doctest")
+mark_as_advanced(doctest_INCLUDE_DIR)
+
+if(doctest_INCLUDE_DIR)
+  add_library(doctest INTERFACE)
+  target_include_directories(doctest
+    INTERFACE ${doctest_INCLUDE_DIR})
 endif()
-
-# Provide the include directory to the caller
-set(DOCTEST_INCLUDE_DIRS ${DOCTEST_INCLUDE_DIR})
-
-# Mark the cache variables as advanced
-mark_as_advanced(DOCTEST_INCLUDE_DIR)

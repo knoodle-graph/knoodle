@@ -51,14 +51,6 @@ set(GIT_SHA "unknown" CACHE STRING "Git SHA of the current build")
 string(SUBSTRING "${GIT_SHA}" 0 8 GIT_SHORT_SHA)
 
 ###########################################################
-# Compiler settings                                       #
-###########################################################
-
-target_compile_features(knoodle-options INTERFACE cxx_std_${CMAKE_CXX_STANDARD})
-
-add_library(knoodle::knoodle-options ALIAS knoodle-options)
-
-###########################################################
 # Project versioning                                      #
 ###########################################################
 
@@ -74,10 +66,6 @@ configure_file(
 add_subdirectory(source)
 
 include(CTest)
-
-if(BUILD_TESTING)
-  add_subdirectory(tests)
-endif()
 
 ###########################################################
 # Installation                                            #
@@ -96,7 +84,7 @@ set(CPACK_PACKAGE_FILE_NAME
 set(CPACK_PACKAGE_VENDOR "knoodle")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
-set(CPACK_GENERATOR "ZIP")
+set(CPACK_GENERATOR "Nuget,ZIP")
 set(CPACK_THREADS 0)
 
 include(CPack)

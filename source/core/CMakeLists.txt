@@ -14,9 +14,9 @@ target_sources(core
     include/math/kn-math.hpp)
 
 knoodle_create_tests(
-  NAME core-test
+  NAME core_test
   DEPENDS core)
 
-target_sources(core-test
+target_sources(core_test
   PRIVATE
-    tests/math/kn-math-test.cpp)
+    "tests/math/kn-math-test.cpp")
