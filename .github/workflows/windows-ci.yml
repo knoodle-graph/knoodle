@@ -24,12 +24,12 @@ jobs:
 
     - name: Configure CMake
       shell: bash
-      working-directory: ${{github.workspace}}/build
       run: |
         cmake
+        -S ${{github.workspace}}
+        -B ${{github.workspace}}/build
         -G "Visual Studio 16 2019" -A x64
         -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-        ..
 
     - name: Build
       working-directory: ${{github.workspace}}/build
