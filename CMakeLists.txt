@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.30)
+cmake_minimum_required(VERSION 3.28)
 
 ###########################################################
 # Global settings                                         #
@@ -31,9 +31,17 @@ project(
 # Global Options                                          #
 ###########################################################
 
+set(KNOODLE_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE INTERNAL "Root directory of the knoodle project")
+mark_as_advanced(KNOODLE_ROOT_DIR)
+
 ###########################################################
 # Dependencies                                            #
 ###########################################################
+
+include(CTest)
+if(BUILD_TESTING)
+  find_package(doctest REQUIRED)
+endif()
 
 ###########################################################
 # Project Options                                         #
@@ -55,21 +63,15 @@ string(SUBSTRING "${GIT_SHA}" 0 8 GIT_SHORT_SHA)
 ###########################################################
 
 configure_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/source/knoodle/include/version.hpp.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/include/knoodle/version.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/version.hpp.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/include/version.hpp"
   ESCAPE_QUOTES)
   
 ###########################################################
 # Add intern subdirectories                               #
 ###########################################################
 
-include(CTest)
-if(BUILD_TESTING)
-  find_package(doctest REQUIRED)
-endif()
-
-
-add_subdirectory(source)
+add_subdirectory(src)
 
 ###########################################################
 # Installation                                            #

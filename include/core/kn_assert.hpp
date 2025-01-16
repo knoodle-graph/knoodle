@@ -1,5 +1,5 @@
 /**************************************************************************/
-/* pool-allocator.cpp                                                     */
+/* kn_assert.hpp                                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                                Knoodle                                 */
@@ -27,8 +27,32 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "memory/pool_allocator.hpp"
+#pragma once
 
-namespace kn {
+#include <assert.h>
+#include <iostream>
 
-}// namespace kn
+#if defined(_MSC_VER)
+#include <intrin.h>
+#define DEBUG_BREAK() (__nop(), __debugbreak())
+#else
+#include <signal.h>
+#define DEBUG_BREAK() raise(SIGTRAP)
+#endif
+
+#define ensure(condition)                                             \
+  ((condition) || ([](const char* cond, const char* file, int line) { \
+     std::cerr << "Ensure failed: (" << cond << "), "                 \
+               << "file " << file << ", line " << line << '\n';       \
+     DEBUG_BREAK();                                                   \
+     return false;                                                    \
+   }(#condition, __FILE__, __LINE__)))
+
+#define ensure_msg(condition, msg)                                                     \
+  ((condition) || ([](const char* cond, const char* file, int line, const char* msg) { \
+     std::cerr << "Ensure failed: (" << cond << "), "                                  \
+               << "file " << file << ", line " << line << '\n'                         \
+               << "Message: " << msg << '\n';                                          \
+     DEBUG_BREAK();                                                                    \
+     return false;                                                                     \
+   }(#condition, __FILE__, __LINE__, msg)))

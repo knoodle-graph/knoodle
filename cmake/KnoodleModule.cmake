@@ -19,20 +19,20 @@ function(knoodle_create_module)
     ${ARGN})
 
   # Create the module
-  add_library(${KNOODLE_MODULE_NAME} STATIC)
+  add_library(${KNOODLE_MODULE_NAME} SHARED)
 
   target_compile_features(${KNOODLE_MODULE_NAME} INTERFACE cxx_std_${CMAKE_CXX_STANDARD})
 
   target_compile_options(${KNOODLE_MODULE_NAME}
     PRIVATE
-      $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
+      $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX /wd4251>
       $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -pedantic -Werror>)
 
   # Set the module properties
   target_include_directories(${KNOODLE_MODULE_NAME}
     PUBLIC
-      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-      $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+      $<BUILD_INTERFACE:${KNOODLE_ROOT_DIR}/include/${KNOODLE_MODULE_NAME}>
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/generated>
 
       $<INSTALL_INTERFACE:include>)
 
@@ -51,7 +51,9 @@ function(knoodle_create_module)
         <concepts>
         <string>
         <utility>
-        <vector>)
+        <vector>
+      PRIVATE
+        "${KNOODLE_ROOT_DIR}/include/${KNOODLE_MODULE_NAME}/${KNOODLE_MODULE_NAME}_pch.hpp")
   endif()
 
   # Setup export headers
@@ -60,17 +62,28 @@ function(knoodle_create_module)
 
   include (GenerateExportHeader)
   generate_export_header(${KNOODLE_MODULE_NAME}
-    BASE_NAME include/${KNOODLE_MODULE_NAME}
+    BASE_NAME "generated/${KNOODLE_MODULE_NAME}"
     PREFIX_NAME KN_
     EXPORT_MACRO_NAME ${MODULE_API_NAME})
 
   # Setup module installation
   install(TARGETS ${KNOODLE_MODULE_NAME}
-    EXPORT ${KNOODLE_MODULE_NAME}Targets
-    LIBRARY DESTINATION shlib
-    ARCHIVE DESTINATION lib
-    RUNTIME DESTINATION bin
-    PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${KNOODLE_MODULE_NAME}" COMPONENT dev)
+        RUNTIME           # Following options apply to runtime artifacts.
+          COMPONENT Runtime
+        LIBRARY           # Following options apply to library artifacts.
+          COMPONENT Runtime
+          NAMELINK_COMPONENT Development
+        ARCHIVE           # Following options apply to archive artifacts.
+          COMPONENT Development
+          DESTINATION lib/static
+        FILE_SET HEADERS  # Following options apply to file set HEADERS.
+          COMPONENT Development)
+
+  install(DIRECTORY "${KNOODLE_ROOT_DIR}/include/${KNOODLE_MODULE_NAME}"
+    DESTINATION include)
+
+  install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/generated/"
+    DESTINATION include/${KNOODLE_MODULE_NAME})
 
   include(CMakePackageConfigHelpers)
   write_basic_package_version_file(
@@ -79,7 +92,7 @@ function(knoodle_create_module)
     COMPATIBILITY AnyNewerVersion)
 
   configure_package_config_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake/${KNOODLE_MODULE_NAME}-config.cmake.in"
+    "${KNOODLE_ROOT_DIR}/cmake/${KNOODLE_MODULE_NAME}-config.cmake.in"
     "${CMAKE_CURRENT_BINARY_DIR}/${KNOODLE_MODULE_NAME}-config.cmake"
     INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${KNOODLE_MODULE_NAME}")
 

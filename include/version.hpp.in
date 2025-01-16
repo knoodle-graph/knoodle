@@ -1,5 +1,5 @@
 /**************************************************************************/
-/* heap-allocator.hpp                                                     */
+/* version.hpp                                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                                Knoodle                                 */
@@ -29,64 +29,10 @@
 
 #pragma once
 
-#include "kn_assert.hpp"
-
-#include <memory>
-#include <new>
-#include <stdlib.h>
-
 namespace kn {
-class HeapAllocator
-{
-  HeapAllocator(const HeapAllocator &) = delete;
-  HeapAllocator &operator=(const HeapAllocator &) = delete;
-
-public:
-  HeapAllocator() = default;
-  ~HeapAllocator() = default;
-
-  constexpr size_t get_allocated_size() const { return _allocated_size; }
-  constexpr size_t get_deallocated_size() const { return _deallocated_size; }
-  constexpr size_t get_total_size() const { return _allocated_size - _deallocated_size; }
-
-  static HeapAllocator *get_instance();
-
-  template<typename T> T *allocate(size_t count = 1, size_t alignment = 1)
-  {
-    size_t desired_size = count * sizeof(T);
-    _allocated_size += desired_size;
-
-    T *obj = nullptr;
-
-    void *ptr = nullptr;
-#if defined(_MSC_VER)
-    ptr = _aligned_malloc(desired_size, alignment);
-#else
-    posix_memalign(&ptr, alignment, desired_size);
-#endif
-
-    if (ensure(ptr)) {
-      obj = reinterpret_cast<T *>(ptr);
-      for (uint32_t i = 0; i < count; ++i) { new (reinterpret_cast<T *>(ptr) + i) T; }
-      return obj;
-    }
-
-    return nullptr;
-  }
-
-  template<typename T> void deallocate(T *ptr, size_t count = 1)
-  {
-    if (ensure(ptr)) {
-      size_t desired_size = count * sizeof(T);
-      _deallocated_size += desired_size;
-      for (uint32_t i = 0; i < count; ++i) { ptr[i].~T(); }
-    }
-  }
-
-private:
-  static std::unique_ptr<HeapAllocator> instance;
-
-  size_t _allocated_size = 0;
-  size_t _deallocated_size = 0;
-};
-}// namespace kn
+inline constexpr std::string_view kVersion = "@KNOODLE_VERSION@";
+inline constexpr int32_t kVersionMajor { @KNOODLE_VERSION_MAJOR @ };
+inline constexpr int32_t kVersionMinor { @KNOODLE_VERSION_MINOR @ };
+inline constexpr int32_t kVersionPatch { @KNOODLE_VERSION_PATCH @ };
+inline constexpr std::string_view kGitSha = "@GIT_SHA@";
+} // namespace kn

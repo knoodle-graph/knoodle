@@ -1,5 +1,5 @@
 /**************************************************************************/
-/* kn-math-test.cpp                                                       */
+/* heap_allocator.hpp                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                                Knoodle                                 */
@@ -27,42 +27,69 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include <doctest/doctest.h>
+#pragma once
 
-#include "math/kn_math.hpp"
+#include <stdlib.h>
+#include <memory>
+#include <new>
 
-TEST_CASE("Testing kn::math::rsqrt")
-{
-  SUBCASE("Test with positive numbers")
-  {
-    CHECK(doctest::Approx(kn::math::rsqrt(4.0)) == 0.5);
-    CHECK(doctest::Approx(kn::math::rsqrt(9.0)) == 0.333333);
-    CHECK(doctest::Approx(kn::math::rsqrt(16.0)) == 0.25);
+#include "kn_assert.hpp"
+
+namespace kn {
+class KN_CORE_API HeapAllocator {
+  HeapAllocator(const HeapAllocator&) = delete;
+  HeapAllocator& operator=(const HeapAllocator&) = delete;
+
+ public:
+  HeapAllocator() = default;
+  ~HeapAllocator() = default;
+
+  constexpr size_t get_allocated_size() const { return _allocated_size; }
+  constexpr size_t get_deallocated_size() const { return _deallocated_size; }
+  constexpr size_t get_total_size() const { return _allocated_size - _deallocated_size; }
+
+  static HeapAllocator* get_instance();
+
+  template <typename T>
+  T* allocate(size_t count = 1, size_t alignment = 1) {
+    size_t desired_size = count * sizeof(T);
+    _allocated_size += desired_size;
+
+    T* obj = nullptr;
+
+    void* ptr = nullptr;
+#if defined(_MSC_VER)
+    ptr = _aligned_malloc(desired_size, alignment);
+#else
+    posix_memalign(&ptr, alignment, desired_size);
+#endif
+
+    if (ensure(ptr)) {
+      obj = reinterpret_cast<T*>(ptr);
+      for (uint32_t i = 0; i < count; ++i) {
+        new (reinterpret_cast<T*>(ptr) + i) T;
+      }
+      return obj;
+    }
+
+    return nullptr;
   }
 
-  SUBCASE("Test with small positive numbers")
-  {
-    CHECK(doctest::Approx(kn::math::rsqrt(0.25)) == 2.0);
-    CHECK(doctest::Approx(kn::math::rsqrt(0.01)) == 10.0);
+  template <typename T>
+  void deallocate(T* ptr, size_t count = 1) {
+    if (ensure(ptr)) {
+      size_t desired_size = count * sizeof(T);
+      _deallocated_size += desired_size;
+      for (uint32_t i = 0; i < count; ++i) {
+        ptr[i].~T();
+      }
+    }
   }
 
-  SUBCASE("Test with edge cases") { CHECK(doctest::Approx(kn::math::rsqrt(1.0)) == 1.0); }
-}
+ private:
+  static std::unique_ptr<HeapAllocator> instance;
 
-TEST_CASE("Testing kn::math::floor_to")
-{
-  SUBCASE("Test with positive numbers")
-  {
-    CHECK(kn::math::floor_to<int32_t>(4.0) == 4);
-    CHECK(kn::math::floor_to<int32_t>(4.5) == 4);
-    CHECK(kn::math::floor_to<int32_t>(4.9) == 4);
-  }
-  SUBCASE("Test with negative numbers")
-  {
-    CHECK(kn::math::floor_to<int32_t>(-4.0) == -4);
-    CHECK(kn::math::floor_to<int32_t>(-4.5) == -5);
-    CHECK(kn::math::floor_to<int32_t>(-4.9) == -5);
-  }
-  SUBCASE("Test with zero") { CHECK(kn::math::floor_to<int32_t>(0.0) == 0); }
-}
+  size_t _allocated_size = 0;
+  size_t _deallocated_size = 0;
+};
+}  // namespace kn

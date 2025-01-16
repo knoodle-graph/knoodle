@@ -1,5 +1,5 @@
 /**************************************************************************/
-/* buddy-allocator.hpp                                                    */
+/* pool_allocator.cpp                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                                Knoodle                                 */
@@ -27,41 +27,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "memory/pool_allocator.hpp"
 
-#include "memory/heap_allocator.hpp"
-#include <cassert>
-#include <cmath>
-#include <vector>
-#include "core_export.h"
-
-namespace kn {
-
-class KN_CORE_API BuddyAllocator
-{
-  BuddyAllocator(const BuddyAllocator &) = delete;
-  BuddyAllocator &operator=(const BuddyAllocator &) = delete;
-
-public:
-  BuddyAllocator(size_t size);
-  ~BuddyAllocator();
-
-  void *allocate(size_t size);
-  void deallocate(void *ptr);
-
-  constexpr size_t get_size() const { return _size; }
-  constexpr size_t get_free_size() const { return _free_list.size(); }
-  constexpr size_t get_used_size() const { return _size - get_free_size(); }
-
-private:
-  constexpr size_t align_to_power_of_two(size_t size) { return size == 0 ? 1 : (1 << (int(log2(size - 1)) + 1)); }
-  constexpr size_t get_buddy_index(size_t index) { return index % 2 == 0 ? index - 1 : index + 1; }
-  constexpr size_t get_parent_index(size_t index) { return (index - 1) / 2; }
-  constexpr size_t get_left_child_index(size_t index) { return 2 * index + 1; }
-  constexpr size_t get_right_child_index(size_t index) { return 2 * index + 2; }
-
-  std::vector<bool> _free_list;
-  void *_memory;
-  size_t _size;
-};
-}// namespace kn
+namespace kn {}  // namespace kn

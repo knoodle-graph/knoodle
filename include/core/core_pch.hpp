@@ -1,5 +1,5 @@
 /**************************************************************************/
-/* stack-allocator.cpp                                                    */
+/* core_pch.hpp                                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                                Knoodle                                 */
@@ -27,24 +27,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "memory/stack_allocator.hpp"
+#pragma once
 
-namespace kn {
-StackAllocator::StackAllocator() : _start(nullptr), _end(nullptr), _current(nullptr) {}
-
-
-StackAllocator::~StackAllocator()
-{
-  assert(_start == _current);
-
-  if (_start) { free(_start); }
-}
-
-
-void StackAllocator::initialize(size_t size)
-{
-  _start = malloc(size);
-  _current = _start;
-  _end = reinterpret_cast<void *>(reinterpret_cast<size_t>(_start) + size);
-}
-}// namespace kn
+#include "core_export.h"

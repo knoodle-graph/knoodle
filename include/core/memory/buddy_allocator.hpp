@@ -1,5 +1,5 @@
 /**************************************************************************/
-/* kn-assert.hpp                                                          */
+/* buddy_allocator.hpp                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                                Knoodle                                 */
@@ -29,30 +29,38 @@
 
 #pragma once
 
-#include <iostream>
-#include <assert.h>
+#include <cassert>
+#include <cmath>
+#include <vector>
 
-#if defined(_MSC_VER)
-#include <intrin.h>
-#define DEBUG_BREAK() (__nop(), __debugbreak())
-#else
-#include <signal.h>
-#define DEBUG_BREAK() raise(SIGTRAP)
-#endif
+#include "memory/heap_allocator.hpp"
 
-#define ensure(condition)                                             \
-  ((condition) || ([](const char *cond, const char *file, int line) { \
-    std::cerr << "Ensure failed: (" << cond << "), "                  \
-              << "file " << file << ", line " << line << '\n';        \
-    DEBUG_BREAK();                                                    \
-    return false;                                                     \
-  }(#condition, __FILE__, __LINE__)))
+namespace kn {
 
-#define ensure_msg(condition, msg)                                                     \
-  ((condition) || ([](const char *cond, const char *file, int line, const char *msg) { \
-    std::cerr << "Ensure failed: (" << cond << "), "                                   \
-              << "file " << file << ", line " << line << '\n'                          \
-              << "Message: " << msg << '\n';                                           \
-    DEBUG_BREAK();                                                                     \
-    return false;                                                                      \
-  }(#condition, __FILE__, __LINE__, msg)))
+class KN_CORE_API BuddyAllocator {
+  BuddyAllocator(const BuddyAllocator&) = delete;
+  BuddyAllocator& operator=(const BuddyAllocator&) = delete;
+
+ public:
+  BuddyAllocator(size_t size);
+  ~BuddyAllocator();
+
+  void* allocate(size_t size);
+  void deallocate(void* ptr);
+
+  constexpr size_t get_size() const { return _size; }
+  constexpr size_t get_free_size() const { return _free_list.size(); }
+  constexpr size_t get_used_size() const { return _size - get_free_size(); }
+
+ private:
+  constexpr size_t align_to_power_of_two(size_t size) { return size == 0 ? 1 : (1 << (int(log2(size - 1)) + 1)); }
+  constexpr size_t get_buddy_index(size_t index) { return index % 2 == 0 ? index - 1 : index + 1; }
+  constexpr size_t get_parent_index(size_t index) { return (index - 1) / 2; }
+  constexpr size_t get_left_child_index(size_t index) { return 2 * index + 1; }
+  constexpr size_t get_right_child_index(size_t index) { return 2 * index + 2; }
+
+  std::vector<bool> _free_list;
+  void* _memory;
+  size_t _size;
+};
+}  // namespace kn
