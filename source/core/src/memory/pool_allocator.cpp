@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "memory/pool-allocator.hpp"
+#include "memory/pool_allocator.hpp"
 
 namespace kn {
 

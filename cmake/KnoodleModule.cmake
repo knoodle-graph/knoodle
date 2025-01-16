@@ -32,6 +32,8 @@ function(knoodle_create_module)
   target_include_directories(${KNOODLE_MODULE_NAME}
     PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+
       $<INSTALL_INTERFACE:include>)
 
   # Set dependencies
@@ -58,6 +60,7 @@ function(knoodle_create_module)
 
   include (GenerateExportHeader)
   generate_export_header(${KNOODLE_MODULE_NAME}
+    BASE_NAME include/${KNOODLE_MODULE_NAME}
     PREFIX_NAME KN_
     EXPORT_MACRO_NAME ${MODULE_API_NAME})
 
@@ -82,14 +85,15 @@ function(knoodle_create_module)
 
 endfunction()
 
-function(knoodle_create_tests)
-  if(BUILD_TESTING)
-    find_package(doctest REQUIRED)
+function(knoodle_add_tests)
+  cmake_policy(SET CMP0103 NEW)
 
+  if(BUILD_TESTING)
     set(_ONE_VALUE_ARGS
       # module name
       NAME
-      NAMESPACE)
+      COMMAND
+      FILE)
 
     set(_MULTI_VALUE_ARGS
       # module dependencies
@@ -103,12 +107,14 @@ function(knoodle_create_tests)
       "${_MULTI_VALUE_ARGS}"
       ${ARGN})
 
-    add_executable(${KNOODLE_TESTS_NAME})
-    target_compile_features(${KNOODLE_TESTS_NAME} INTERFACE cxx_std_${CMAKE_CXX_STANDARD})
+    add_executable(${KNOODLE_TESTS_COMMAND} ${KNOODLE_TESTS_FILE})
+    target_compile_features(${KNOODLE_TESTS_COMMAND} INTERFACE cxx_std_${CMAKE_CXX_STANDARD})
 
-    target_link_libraries(${KNOODLE_TESTS_NAME}
+    target_link_libraries(${KNOODLE_TESTS_COMMAND}
       PRIVATE
       doctest
       ${KNOODLE_TESTS_DEPENDS})
+
+    add_test(NAME ${KNOODLE_TESTS_NAME} COMMAND ${KNOODLE_TESTS_COMMAND})
   endif()
 endfunction()

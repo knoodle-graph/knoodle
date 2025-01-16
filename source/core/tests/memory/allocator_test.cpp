@@ -1,5 +1,5 @@
 /**************************************************************************/
-/* buddy-allocator.cpp                                                    */
+/* allocator-test.cpp                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                                Knoodle                                 */
@@ -27,52 +27,65 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "memory/buddy-allocator.hpp"
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include <doctest/doctest.h>
 
-namespace kn {
-BuddyAllocator::BuddyAllocator(size_t size) : _size(align_to_power_of_two(size))
+#include "memory/heap_allocator.hpp"
+
+TEST_CASE("HeapAllocator::get_allocated_size")
 {
-  _memory = malloc(_size);
-  _free_list.resize(2 * _size - 1, true);
+  auto allocator = kn::HeapAllocator::get_instance();
+  CHECK(allocator->get_allocated_size() == 0);
 }
 
-BuddyAllocator::~BuddyAllocator() { free(_memory); }
-
-void *BuddyAllocator::allocate(size_t size)
+TEST_CASE("HeapAllocator::get_deallocated_size")
 {
-  size = align_to_power_of_two(size);
-  size_t index = 0;
-  size_t level_size = _size;
+  auto allocator = kn::HeapAllocator::get_instance();
+  CHECK(allocator->get_deallocated_size() == 0);
+}
 
-  while (level_size > size) {
-    if (_free_list[get_left_child_index(index)]) {
-      index = get_left_child_index(index);
-    } else {
-      index = get_right_child_index(index);
-    }
-    level_size /= 2;
+TEST_CASE("HeapAllocator::get_total_size")
+{
+  auto allocator = kn::HeapAllocator::get_instance();
+  CHECK(allocator->get_total_size() == 0);
+}
+
+TEST_CASE("HeapAllocator::allocate and deallocate")
+{
+  auto allocator = kn::HeapAllocator::get_instance();
+
+  SUBCASE("Allocate and deallocate single int")
+  {
+    int *ptr = allocator->allocate<int>();
+    REQUIRE(ptr != nullptr);
+    CHECK(allocator->get_allocated_size() == sizeof(int));
+    CHECK(allocator->get_total_size() == sizeof(int));
+
+    allocator->deallocate(ptr);
+    CHECK(allocator->get_deallocated_size() == sizeof(int));
+    CHECK(allocator->get_total_size() == 0);
   }
 
-  if (!_free_list[index]) { return nullptr; }
+  SUBCASE("Allocate and deallocate array of ints")
+  {
+    const size_t count = 10;
+    int *ptr = allocator->allocate<int>(count);
+    REQUIRE(ptr != nullptr);
 
-  _free_list[index] = false;
-  return static_cast<char *>(_memory) + (index - (1ull << (size_t(log2(index + 1ull))))) * size;
-}
-
-void BuddyAllocator::deallocate(void *ptr)
-{
-  size_t offset = static_cast<char *>(ptr) - static_cast<char *>(_memory);
-  size_t index = offset / _size + (1ull << ((size_t(log2(offset / _size + 1ull))) - 1ull));
-
-  while (index > 0) {
-    _free_list[index] = true;
-    size_t buddy_index = get_buddy_index(index);
-    if (_free_list[buddy_index]) {
-      index = get_parent_index(index);
-    } else {
-      break;
-    }
+    allocator->deallocate(ptr, count);
+    CHECK(allocator->get_total_size() == 0);
   }
-  _free_list[index] = true;
 }
-}// namespace kn
+
+TEST_CASE("HeapAllocator::get_instance")
+{
+  auto allocator1 = kn::HeapAllocator::get_instance();
+  auto allocator2 = kn::HeapAllocator::get_instance();
+  CHECK(allocator1 == allocator2);
+}
+
+TEST_CASE("HeapAllocator zero leaks")
+{
+  auto allocator = kn::HeapAllocator::get_instance();
+  CHECK(allocator->get_total_size() == 0);
+}

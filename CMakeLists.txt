@@ -55,17 +55,21 @@ string(SUBSTRING "${GIT_SHA}" 0 8 GIT_SHORT_SHA)
 ###########################################################
 
 configure_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/source/knoodle/public/version.hpp.in"
+  "${CMAKE_CURRENT_SOURCE_DIR}/source/knoodle/include/version.hpp.in"
   "${CMAKE_CURRENT_BINARY_DIR}/include/knoodle/version.hpp"
   ESCAPE_QUOTES)
-
+  
 ###########################################################
 # Add intern subdirectories                               #
 ###########################################################
 
-add_subdirectory(source)
-
 include(CTest)
+if(BUILD_TESTING)
+  find_package(doctest REQUIRED)
+endif()
+
+
+add_subdirectory(source)
 
 ###########################################################
 # Installation                                            #

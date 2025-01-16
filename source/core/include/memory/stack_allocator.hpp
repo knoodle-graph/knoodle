@@ -1,5 +1,5 @@
 /**************************************************************************/
-/* stack-allocator.cpp                                                    */
+/* stack-allocator.hpp                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                                Knoodle                                 */
@@ -27,24 +27,50 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "memory/stack-allocator.hpp"
+#pragma once
+
+#include "kn_assert.hpp"
+
+#include <memory>
+#include <new>
+#include <stdlib.h>
 
 namespace kn {
-StackAllocator::StackAllocator() : _start(nullptr), _end(nullptr), _current(nullptr) {}
-
-
-StackAllocator::~StackAllocator()
+class StackAllocator
 {
-  assert(_start == _current);
+  StackAllocator(const StackAllocator &) = delete;
+  StackAllocator &operator=(const StackAllocator &) = delete;
 
-  if (_start) { free(_start); }
-}
+public:
+  StackAllocator();
+  ~StackAllocator();
 
+  void initialize(size_t size);
 
-void StackAllocator::initialize(size_t size)
-{
-  _start = malloc(size);
-  _current = _start;
-  _end = reinterpret_cast<void *>(reinterpret_cast<size_t>(_start) + size);
-}
+  void *allocate(size_t size, size_t alignment = 1)
+  {
+    if (ensure(reinterpret_cast<size_t>(_current) + size <= reinterpret_cast<size_t>(_end))) {
+      size_t ptr = reinterpret_cast<size_t>(_current);
+      size_t mod = (alignment - ptr % alignment) % alignment;
+
+      ptr += mod;
+      _current = reinterpret_cast<void *>(ptr + size);
+      return reinterpret_cast<void *>(ptr);
+    }
+    return nullptr;
+  }
+
+  void deallocate(void *ptr)
+  {
+    assert(ptr < _current);
+    _current = ptr;
+  }
+
+  inline size_t get_size() const { return reinterpret_cast<size_t>(_end) - reinterpret_cast<size_t>(_start); }
+
+private:
+  void *_start;
+  void *_end;
+  void *_current;
+};
 }// namespace kn

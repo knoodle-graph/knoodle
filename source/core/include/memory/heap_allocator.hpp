@@ -29,7 +29,7 @@
 
 #pragma once
 
-#include "kn-assert.hpp"
+#include "kn_assert.hpp"
 
 #include <memory>
 #include <new>

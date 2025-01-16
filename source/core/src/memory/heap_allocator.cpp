@@ -1,5 +1,5 @@
 /**************************************************************************/
-/* pool-allocator.hpp                                                     */
+/* heap-allocator.cpp                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                                Knoodle                                 */
@@ -27,55 +27,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
-
-#include "memory/heap-allocator.hpp"
-#include <vector>
+#include "memory/heap_allocator.hpp"
 
 namespace kn {
-template<typename T> class PoolAllocator
+std::unique_ptr<HeapAllocator> HeapAllocator::instance;
+
+HeapAllocator *HeapAllocator::get_instance()
 {
-  PoolAllocator(const PoolAllocator &) = delete;
-  PoolAllocator &operator=(const PoolAllocator &) = delete;
-
-public:
-  PoolAllocator(size_t blockCount)
-    : _blockSize(sizeof(T)), _blockCount(blockCount), _pool(nullptr), _freeBlocks(blockCount)
-  {
-    uint8_t *poolData = HeapAllocator::get_instance()->allocate<uint8_t>(blockCount);
-    _pool = reinterpret_cast<void *>(poolData);
-    for (size_t i = 0; i < blockCount; ++i) { _freeBlocks[i] = (T *)((uint8_t *)_pool + i * _blockSize); }
-  }
-
-  ~PoolAllocator()
-  {
-    if (_pool) { free(_pool); }
-  }
-
-  T *allocate()
-  {
-    constexpr size_t alignment = alignof(T);
-
-    if (ensure(!_freeBlocks.empty())) {
-      void *ptr = _freeBlocks.back();
-      new (ptr) T;
-      _freeBlocks.pop_back();
-      return ptr;
-    }
-
-    return nullptr;
-  }
-
-  void deallocate(T *ptr)
-  {
-    delete ptr;
-    _freeBlocks.push_back(ptr);
-  }
-
-private:
-  size_t _blockSize;
-  size_t _blockCount;
-  T *_pool;
-  std::vector<void *> _freeBlocks;
-};
+  if (!instance) { instance = std::make_unique<HeapAllocator>(); }
+  return instance.get();
+}
 }// namespace kn

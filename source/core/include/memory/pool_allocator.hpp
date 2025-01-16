@@ -1,5 +1,5 @@
 /**************************************************************************/
-/* stack-allocator.hpp                                                    */
+/* pool-allocator.hpp                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                                Knoodle                                 */
@@ -29,48 +29,53 @@
 
 #pragma once
 
-#include "kn-assert.hpp"
-
-#include <memory>
-#include <new>
-#include <stdlib.h>
+#include "memory/heap_allocator.hpp"
+#include <vector>
 
 namespace kn {
-class StackAllocator
+template<typename T> class PoolAllocator
 {
-  StackAllocator(const StackAllocator &) = delete;
-  StackAllocator &operator=(const StackAllocator &) = delete;
+  PoolAllocator(const PoolAllocator &) = delete;
+  PoolAllocator &operator=(const PoolAllocator &) = delete;
 
 public:
-  StackAllocator();
-  ~StackAllocator();
-
-  void initialize(size_t size);
-
-  void *allocate(size_t size, size_t alignment = 1)
+  PoolAllocator(size_t blockCount)
+    : _blockSize(sizeof(T)), _blockCount(blockCount), _pool(nullptr), _freeBlocks(blockCount)
   {
-    if (ensure(reinterpret_cast<size_t>(_current) + size <= reinterpret_cast<size_t>(_end))) {
-      size_t ptr = reinterpret_cast<size_t>(_current);
-      size_t mod = (alignment - ptr % alignment) % alignment;
+    uint8_t *poolData = HeapAllocator::get_instance()->allocate<uint8_t>(blockCount);
+    _pool = reinterpret_cast<void *>(poolData);
+    for (size_t i = 0; i < blockCount; ++i) { _freeBlocks[i] = (T *)((uint8_t *)_pool + i * _blockSize); }
+  }
 
-      ptr += mod;
-      _current = reinterpret_cast<void *>(ptr + size);
-      return reinterpret_cast<void *>(ptr);
+  ~PoolAllocator()
+  {
+    if (_pool) { free(_pool); }
+  }
+
+  T *allocate()
+  {
+    constexpr size_t alignment = alignof(T);
+
+    if (ensure(!_freeBlocks.empty())) {
+      void *ptr = _freeBlocks.back();
+      new (ptr) T;
+      _freeBlocks.pop_back();
+      return ptr;
     }
+
     return nullptr;
   }
 
-  void deallocate(void *ptr)
+  void deallocate(T *ptr)
   {
-    assert(ptr < _current);
-    _current = ptr;
+    delete ptr;
+    _freeBlocks.push_back(ptr);
   }
 
-  inline size_t get_size() const { return reinterpret_cast<size_t>(_end) - reinterpret_cast<size_t>(_start); }
-
 private:
-  void *_start;
-  void *_end;
-  void *_current;
+  size_t _blockSize;
+  size_t _blockCount;
+  T *_pool;
+  std::vector<void *> _freeBlocks;
 };
 }// namespace kn

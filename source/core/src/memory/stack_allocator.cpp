@@ -1,5 +1,5 @@
 /**************************************************************************/
-/* heap-allocator.cpp                                                     */
+/* stack-allocator.cpp                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                                Knoodle                                 */
@@ -27,14 +27,24 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "memory/heap-allocator.hpp"
+#include "memory/stack_allocator.hpp"
 
 namespace kn {
-std::unique_ptr<HeapAllocator> HeapAllocator::instance;
+StackAllocator::StackAllocator() : _start(nullptr), _end(nullptr), _current(nullptr) {}
 
-HeapAllocator *HeapAllocator::get_instance()
+
+StackAllocator::~StackAllocator()
 {
-  if (!instance) { instance = std::make_unique<HeapAllocator>(); }
-  return instance.get();
+  assert(_start == _current);
+
+  if (_start) { free(_start); }
+}
+
+
+void StackAllocator::initialize(size_t size)
+{
+  _start = malloc(size);
+  _current = _start;
+  _end = reinterpret_cast<void *>(reinterpret_cast<size_t>(_start) + size);
 }
 }// namespace kn
