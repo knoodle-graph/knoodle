@@ -48,16 +48,16 @@ class KN_CORE_API BuddyAllocator {
   void* allocate(size_t size);
   void deallocate(void* ptr);
 
-  constexpr size_t get_size() const { return _size; }
-  constexpr size_t get_free_size() const { return _free_list.size(); }
-  constexpr size_t get_used_size() const { return _size - get_free_size(); }
+  inline size_t get_size() const { return _size; }
+  inline size_t get_free_size() const { return _free_list.size(); }
+  inline size_t get_used_size() const { return _size - get_free_size(); }
 
  private:
-  constexpr size_t align_to_power_of_two(size_t size) { return size == 0 ? 1 : (1 << (int(log2(size - 1)) + 1)); }
-  constexpr size_t get_buddy_index(size_t index) { return index % 2 == 0 ? index - 1 : index + 1; }
-  constexpr size_t get_parent_index(size_t index) { return (index - 1) / 2; }
-  constexpr size_t get_left_child_index(size_t index) { return 2 * index + 1; }
-  constexpr size_t get_right_child_index(size_t index) { return 2 * index + 2; }
+  inline size_t align_to_power_of_two(size_t size) { return size == 0 ? 1 : (1 << (int(log2(size - 1)) + 1)); }
+  inline size_t get_buddy_index(size_t index) { return index % 2 == 0 ? index - 1 : index + 1; }
+  inline size_t get_parent_index(size_t index) { return (index - 1) / 2; }
+  inline size_t get_left_child_index(size_t index) { return 2 * index + 1; }
+  inline size_t get_right_child_index(size_t index) { return 2 * index + 2; }
 
   std::vector<bool> _free_list;
   void* _memory;
