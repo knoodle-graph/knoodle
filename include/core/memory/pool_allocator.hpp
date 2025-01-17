@@ -56,8 +56,6 @@ class KN_CORE_API PoolAllocator {
   }
 
   T* allocate() {
-    constexpr size_t alignment = alignof(T);
-
     if (ensure(!_freeBlocks.empty())) {
       void* ptr = _freeBlocks.back();
       new (ptr) T;
