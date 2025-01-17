@@ -1,7 +1,6 @@
 ---
 Language:             Cpp
 BasedOnStyle:         Chromium
-AccessModifierOffset: -4
 Standard:             Auto
 ColumnLimit:          120
 ...
