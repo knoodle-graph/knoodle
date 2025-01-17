@@ -19,17 +19,15 @@ jobs:
         sudo apt update -y &&
         sudo apt install -y
         cmake
-        clang
+        g++
         build-essential
         ninja-build
+        lcov
 
     - name: Create Build Environment
       run: cmake -E make_directory ${{github.workspace}}/build
 
     - name: Configure CMake
-      env:
-        CC: clang
-        CXX: clang++
       run: >-
         cmake
         -G Ninja
@@ -40,45 +38,14 @@ jobs:
         -DCODE_COVERAGE:BOOL=ON
 
     - name: Build
-      env:
-        CC: clang
-        CXX: clang++
       working-directory: ${{github.workspace}}/build
       run: |
         cmake --build .
 
     - name: Test
-      env:
-        CC: clang
-        CXX: clang++
       working-directory: "${{github.workspace}}/build"
       run: |
         ctest --no-tests=error
-
-    - name: Install lcov
-      run: |
-        wget -O lcov.tar.gz https://github.com/linux-test-project/lcov/releases/download/v2.3/lcov-2.3.tar.gz
-        tar -xvf lcov.tar.gz
-        cd lcov-2.3
-        sudo make install
-
-    - uses: shogo82148/actions-setup-perl@v1
-      with:
-        perl-version: "5.38"
-        install-modules-with: cpanm
-    - name: Install perl dependencies
-      run: |
-        cpanm --notest Capture::Tiny
-        cpanm --notest DateTime
-        cpanm --notest Devel::Cover
-        cpanm --notest Digest::MD5
-        cpanm --notest File::Spec
-        cpanm --notest JSON::XS
-        cpanm --notest Memory::Process
-        cpanm --notest Module::Load::Conditional
-        cpanm --notest Scalar::Util
-        cpanm --notest Time::HiRes
-        cpanm --notest TimeDate
 
     - name: Create Coverage Reports
       run: |
