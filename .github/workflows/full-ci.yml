@@ -71,10 +71,10 @@ jobs:
       - name: Setup environment
         run: |
           sudo apt update -y
-          sudo apt install -y ninja-build clang-tidy-14
+          sudo apt install -y ninja-build clang-tidy-17
 
       - name: Configure CMake
-        run: cmake -B build -S . -G Ninja -D CMAKE_CXX_COMPILER=clang++ -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_CLANG_TIDY="clang-tidy-14;-warnings-as-errors=*"
+        run: cmake -B build -S . -G Ninja -D CMAKE_CXX_COMPILER=clang++ -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_CLANG_TIDY="clang-tidy-17;-warnings-as-errors=*"
 
       - name: Build
         run: cmake --build build
