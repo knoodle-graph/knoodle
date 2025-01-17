@@ -86,7 +86,7 @@ TEST_CASE("Testing kn::math functions") {
   }
 
   SUBCASE("rsqrt") {
-    CHECK(kn::math::rsqrt(4.0) == doctest::Approx(0.5).epsilon(0.01));
+    CHECK(kn::math::rsqrt(4.0f) == doctest::Approx(0.5f).epsilon(0.01f));
   }
 
   SUBCASE("lerp") {

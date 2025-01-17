@@ -119,13 +119,13 @@ auto sqrt(number auto x) {
  * @param x The value to return the inverse square root of.
  * @return The inverse square root of x.
  */
-constexpr auto rsqrt(number auto x) {
+constexpr float rsqrt(float x) {
   assert(x > 0);
 
   long i;
   float x2, y;
   const float threehalfs = 1.5f;
-  const float number = static_cast<float>(x);
+  const float number = x;
 
   x2 = number * 0.5f;
   y = number;
