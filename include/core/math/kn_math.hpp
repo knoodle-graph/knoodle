@@ -119,7 +119,7 @@ auto sqrt(number auto x) {
  * @param x The value to return the inverse square root of.
  * @return The inverse square root of x.
  */
-constexpr float rsqrt(float x) {
+inline float rsqrt(float x) {
   assert(x > 0);
 
   long i;
