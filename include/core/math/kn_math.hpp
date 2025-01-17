@@ -120,7 +120,6 @@ auto sqrt(number auto x) {
  * @return The inverse square root of x.
  */
 inline float rsqrt(float x) {
-  assert(x > 0);
   return 1.0f / ::sqrtf(x);
 }
 
