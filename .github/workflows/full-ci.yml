@@ -49,7 +49,7 @@ jobs:
       - name: Create Coverage Reports
         run: |
           mkdir cov_report
-          lcov -c -d build/ -o cov_report/lcov.info --include "*src*" --include "*include*"
+          lcov -c -d build/ -o cov_report/lcov.info --include "*include*"
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
@@ -71,10 +71,10 @@ jobs:
       - name: Setup environment
         run: |
           sudo apt update -y
-          sudo apt install -y ninja-build clang++ clang-tidy-19
+          sudo apt install -y ninja-build clang-tidy-14
 
       - name: Configure CMake
-        run: cmake -B build -S . -G Ninja -D CMAKE_CXX_COMPILER=clang++ -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_CLANG_TIDY="clang-tidy-19;-warnings-as-errors=*"
+        run: cmake -B build -S . -G Ninja -D CMAKE_CXX_COMPILER=clang++ -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_CLANG_TIDY="clang-tidy-14;-warnings-as-errors=*"
 
       - name: Build
         run: cmake --build build
@@ -95,7 +95,7 @@ jobs:
       - name: Setup environment
         run: |
           sudo apt update -y
-          sudo apt install -y ninja-build clang++
+          sudo apt install -y ninja-build
 
       - name: Configure CMake
         run: cmake -B build -S . -G Ninja -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_FLAGS="-fsanitize=${{ matrix.sanitizers }}"
