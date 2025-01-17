@@ -32,16 +32,15 @@ project(
 ###########################################################
 
 set(KNOODLE_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE INTERNAL "Root directory of the knoodle project")
+set(KNOODLE_THIRDPARTY_DIR "${KNOODLE_ROOT_DIR}/third_party" CACHE INTERNAL "Third party directory of the knoodle project")
 mark_as_advanced(KNOODLE_ROOT_DIR)
+mark_as_advanced(KNOODLE_THIRDPARTY_DIR)
 
 ###########################################################
 # Dependencies                                            #
 ###########################################################
 
 include(CTest)
-if(BUILD_TESTING)
-  find_package(doctest REQUIRED)
-endif()
 
 ###########################################################
 # Project Options                                         #

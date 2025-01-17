@@ -1,11 +1,16 @@
-find_path(doctest_INCLUDE_DIR NAMES "doctest.h" "doctest/doctest.h"
-  HINTS
-    "${PROJECT_SOURCE_DIR}/third_party/doctest/include"
-  REQUIRED)
+find_path(DOCTEST_INCLUDE_DIR doctest/doctest.h
+    HINTS ${KNOODLE_THIRDPARTY_DIR}/doctest/include)
 
-mark_as_advanced(doctest_INCLUDE_DIR)
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(doctest DEFAULT_MSG DOCTEST_INCLUDE_DIR)
 
-add_library(doctest INTERFACE)
-target_include_directories(doctest
-  INTERFACE
-    ${doctest_INCLUDE_DIR})
+# Add imported target.
+if(DOCTEST_FOUND)
+    set(DOCTEST_INCLUDE_DIRS "${DOCTEST_INCLUDE_DIR}")
+
+    if(NOT TARGET doctest::doctest)
+        add_library(doctest::doctest INTERFACE IMPORTED)
+        set_target_properties(doctest::doctest PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES "${DOCTEST_INCLUDE_DIRS}")
+    endif()
+endif()
