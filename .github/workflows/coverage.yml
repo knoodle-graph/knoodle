@@ -21,6 +21,8 @@ jobs:
         cmake
         clang
         build-essential
+        lcov
+        ninja-build
 
     - name: Create Build Environment
       run: cmake -E make_directory ${{github.workspace}}/build
@@ -31,9 +33,10 @@ jobs:
         CXX: clang++
       run: >-
         cmake
+        -G Ninja
         -S "${{github.workspace}}"
         -B "${{github.workspace}}/build"
-        -DCMAKE_BUILD_TYPE=Release
+        -DCMAKE_CXX_FLAGS="-fprofile-arcs -ftest-coverage"
         -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
         -DCODE_COVERAGE:BOOL=ON
 
@@ -43,7 +46,7 @@ jobs:
         CXX: clang++
       working-directory: ${{github.workspace}}/build
       run: |
-        cmake --build . --config Release
+        cmake --build .
 
     - name: Test
       env:
@@ -51,19 +54,17 @@ jobs:
         CXX: clang++
       working-directory: "${{github.workspace}}/build"
       run: |
-        ctest -C Release --output-on-failure
+        ctest --no-tests=error
 
     - name: Create Coverage Reports
       run: |
-        sudo apt install -y lcov
-        lcov --capture --directory . --output-file coverage.info
-        lcov --remove coverage.info '/usr/*' --output-file coverage.info
-        lcov --list coverage.info
+        mkdir coverage
+        lcov -c -d build/ -o coverage/lcov.info
 
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v5
       with:
         fail_ci_if_error: true
-        files: ./coverage.info
+        files: coverage/lcov.info
         flags: unittests
         token: ${{ secrets.CODECOV_TOKEN }}
