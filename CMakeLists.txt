@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.28)
 ###########################################################
 
 if (NOT DEFINED CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 20)
+  set(CMAKE_CXX_STANDARD 23)
 endif()
 
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -81,6 +81,11 @@ if(CMAKE_SKIP_INSTALL_RULES)
 endif()
 
 include(GNUInstallDirs)
+
+install(DIRECTORY
+  "${CMAKE_CURRENT_SOURCE_DIR}/config/"
+  DESTINATION "config"
+  FILES_MATCHING PATTERN "*.ini")
 
 set(CPACK_PACKAGE_FILE_NAME
   "${CMAKE_PROJECT_NAME}-${CMAKE_PROJECT_VERSION}-${GIT_SHORT_SHA}-${CMAKE_SYSTEM_NAME}-${CMAKE_BUILD_TYPE}-${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}"

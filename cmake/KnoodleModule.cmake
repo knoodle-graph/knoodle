@@ -74,7 +74,7 @@ function(knoodle_create_module)
 
   # force include the export header
   target_compile_options(${KNOODLE_MODULE_NAME}
-    PRIVATE
+    PUBLIC
       $<$<CXX_COMPILER_ID:MSVC>:/FI${KNOODLE_MODULE_NAME}_export.h>
       $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-include ${KNOODLE_MODULE_NAME}_export.h>) 
 
