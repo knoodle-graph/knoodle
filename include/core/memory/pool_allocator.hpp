@@ -36,13 +36,13 @@
 namespace kn {
 template <typename T>
 class KN_CORE_API PoolAllocator {
+ public:
   PoolAllocator(const PoolAllocator&) = delete;
   PoolAllocator& operator=(const PoolAllocator&) = delete;
 
- public:
   PoolAllocator(size_t blockCount)
       : _blockSize(sizeof(T)), _blockCount(blockCount), _pool(nullptr), _freeBlocks(blockCount) {
-    uint8_t* poolData = HeapAllocator::get_instance()->allocate<uint8_t>(blockCount);
+    auto* poolData = HeapAllocator::get_instance()->allocate<uint8_t>(blockCount);
     _pool = reinterpret_cast<void*>(poolData);
     for (size_t i = 0; i < blockCount; ++i) {
       _freeBlocks[i] = (T*)((uint8_t*)_pool + i * _blockSize);

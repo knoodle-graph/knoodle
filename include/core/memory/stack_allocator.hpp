@@ -37,10 +37,10 @@
 
 namespace kn {
 class KN_CORE_API StackAllocator {
+ public:
   StackAllocator(const StackAllocator&) = delete;
   StackAllocator& operator=(const StackAllocator&) = delete;
 
- public:
   StackAllocator();
   ~StackAllocator();
 
@@ -63,7 +63,7 @@ class KN_CORE_API StackAllocator {
     _current = ptr;
   }
 
-  inline size_t get_size() const { return reinterpret_cast<size_t>(_end) - reinterpret_cast<size_t>(_start); }
+  [[nodiscard]] inline size_t get_size() const { return reinterpret_cast<size_t>(_end) - reinterpret_cast<size_t>(_start); }
 
  private:
   void* _start;

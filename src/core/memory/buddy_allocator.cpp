@@ -58,12 +58,12 @@ void* BuddyAllocator::allocate(size_t size) {
   }
 
   _free_list[index] = false;
-  return static_cast<char*>(_memory) + (index - (1ull << (size_t(log2(index + 1ull))))) * size;
+  return static_cast<char*>(_memory) + (index - (size_t(1) << (size_t(log2(index + size_t(1)))))) * size;
 }
 
 void BuddyAllocator::deallocate(void* ptr) {
   size_t offset = static_cast<char*>(ptr) - static_cast<char*>(_memory);
-  size_t index = offset / _size + (1ull << ((size_t(log2(offset / _size + 1ull))) - 1ull));
+  size_t index = offset / _size + (size_t(1) << ((size_t(log2(offset / _size + size_t(1)))) - size_t(1)));
 
   while (index > 0) {
     _free_list[index] = true;

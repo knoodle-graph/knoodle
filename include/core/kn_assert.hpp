@@ -48,11 +48,11 @@
      return false;                                                    \
    }(#condition, __FILE__, __LINE__)))
 
-#define ensure_msg(condition, msg)                                                     \
-  ((condition) || ([](const char* cond, const char* file, int line, const char* msg) { \
-     std::cerr << "Ensure failed: (" << cond << "), "                                  \
-               << "file " << file << ", line " << line << '\n'                         \
-               << "Message: " << msg << '\n';                                          \
-     DEBUG_BREAK();                                                                    \
-     return false;                                                                     \
+#define ensure_msg(condition, msg)                                                         \
+  ((condition) || ([](const char* cond, const char* file, int line, const char* message) { \
+     std::cerr << "Ensure failed: (" << cond << "), "                                      \
+               << "file " << file << ", line " << line << '\n'                             \
+               << "Message: " << message << '\n';                                          \
+     DEBUG_BREAK();                                                                        \
+     return false;                                                                         \
    }(#condition, __FILE__, __LINE__, msg)))

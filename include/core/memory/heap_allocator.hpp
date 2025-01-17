@@ -37,16 +37,16 @@
 
 namespace kn {
 class KN_CORE_API HeapAllocator {
+ public:
   HeapAllocator(const HeapAllocator&) = delete;
   HeapAllocator& operator=(const HeapAllocator&) = delete;
 
- public:
   HeapAllocator() = default;
   ~HeapAllocator() = default;
 
-  inline size_t get_allocated_size() const { return _allocated_size; }
-  inline size_t get_deallocated_size() const { return _deallocated_size; }
-  inline size_t get_total_size() const { return _allocated_size - _deallocated_size; }
+  [[nodiscard]] inline size_t get_allocated_size() const { return _allocated_size; }
+  [[nodiscard]] inline size_t get_deallocated_size() const { return _deallocated_size; }
+  [[nodiscard]] inline size_t get_total_size() const { return _allocated_size - _deallocated_size; }
 
   static HeapAllocator* get_instance();
 
