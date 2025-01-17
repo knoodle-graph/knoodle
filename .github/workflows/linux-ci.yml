@@ -43,7 +43,7 @@ jobs:
       env:
         CC: ${{matrix.cc}}
         CXX: ${{matrix.cxx}}
-      run: |
+      run: >-
         cmake
         -S "${{github.workspace}}"
         -B "${{github.workspace}}/build"
