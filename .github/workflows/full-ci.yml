@@ -79,29 +79,29 @@ jobs:
       - name: Build
         run: cmake --build build
 
-    sanitize:
-      if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
-      runs-on: ubuntu-latest
+  sanitize:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
 
-      strategy:
-        matrix:
-          sanitizers: ["address", "thread", "undefined", "integer", "implicit-conversion", "nullability", "safe-stack"]
+    strategy:
+      matrix:
+        sanitizers: ["address", "thread", "undefined", "integer", "implicit-conversion", "nullability", "safe-stack"]
 
-      steps:
-        - uses: actions/checkout@v4
-          with:
-            submodules: recursive
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-        - name: Setup environment
-          run: |
-            sudo apt update -y
-            sudo apt install -y ninja-build clang++
+      - name: Setup environment
+        run: |
+          sudo apt update -y
+          sudo apt install -y ninja-build clang++
 
-        - name: Configure CMake
-          run: cmake -B build -S . -G Ninja -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_FLAGS="-fsanitize=${{ matrix.sanitizers }}"
+      - name: Configure CMake
+        run: cmake -B build -S . -G Ninja -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_FLAGS="-fsanitize=${{ matrix.sanitizers }}"
 
-        - name: Build
-          run: cmake --build build
+      - name: Build
+        run: cmake --build build
 
-        - name: Test
-          run: ctest --test-dir build --no-tests=error
+      - name: Test
+        run: ctest --test-dir build --no-tests=error
