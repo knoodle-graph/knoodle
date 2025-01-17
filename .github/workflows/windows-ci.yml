@@ -26,8 +26,8 @@ jobs:
       shell: bash
       run: >-
         cmake
-        -S ${{github.workspace}}
-        -B ${{github.workspace}}/build
+        -S "${{github.workspace}}"
+        -B "${{github.workspace}}/build"
         -G "Visual Studio 16 2019" -A x64
         -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
 
@@ -38,7 +38,7 @@ jobs:
         cmake --build . --config ${{matrix.configuration}}
 
     - name: Test
-      working-directory: ${{github.workspace}}/build
+      working-directory: "${{github.workspace}}/build"
       shell: bash
       run: |
         ctest -C ${{matrix.configuration}} --output-on-failure
