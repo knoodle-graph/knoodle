@@ -21,7 +21,6 @@ jobs:
         cmake
         clang
         build-essential
-        lcov
         ninja-build
 
     - name: Create Build Environment
@@ -55,6 +54,13 @@ jobs:
       working-directory: "${{github.workspace}}/build"
       run: |
         ctest --no-tests=error
+
+    - name: Install lcov
+      run: |
+        wget -O lcov.tar.gz https://github.com/linux-test-project/lcov/releases/download/v2.3/lcov-2.3.tar.gz
+        tar -xvf lcov.tar.gz
+        cd lcov-2.3
+        sudo make install
 
     - name: Create Coverage Reports
       run: |
