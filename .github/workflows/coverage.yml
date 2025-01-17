@@ -62,6 +62,24 @@ jobs:
         cd lcov-2.3
         sudo make install
 
+    - uses: shogo82148/actions-setup-perl@v1
+      with:
+        perl-version: "5.38"
+        install-modules-with: cpanm
+    - name: Install perl dependencies
+      run: |
+        cpanm --notest Capture::Tiny
+        cpanm --notest DateTime
+        cpanm --notest Devel::Cover
+        cpanm --notest Digest::MD5
+        cpanm --notest File::Spec
+        cpanm --notest JSON::XS
+        cpanm --notest Memory::Process
+        cpanm --notest Module::Load::Conditional
+        cpanm --notest Scalar::Util
+        cpanm --notest Time::HiRes
+        cpanm --notest TimeDate
+
     - name: Create Coverage Reports
       run: |
         mkdir coverage
