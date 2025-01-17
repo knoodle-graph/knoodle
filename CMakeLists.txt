@@ -47,6 +47,7 @@ include(CTest)
 ###########################################################
 
 option(KNOODLE_BUILD_EXAMPLES "Build the examples" ON)
+option(CODE_COVERAGE "Enable coverage reporting" OFF)
 
 ###########################################################
 # Git Versioning                                          #

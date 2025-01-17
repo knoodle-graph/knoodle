@@ -1,4 +1,4 @@
-name: Linux Build CI
+name: Coverage
 
 on:
   pull_request:
@@ -7,19 +7,6 @@ on:
 
 jobs:
   build:
-    strategy:
-      fail-fast: true
-      matrix:
-        configuration: [Debug, Release]
-        compiler: [gcc, clang]
-        include:
-          - compiler: gcc
-            cc: gcc
-            cxx: g++
-          - compiler: clang
-            cc: clang
-            cxx: clang++
-
     runs-on: ubuntu-latest
 
     steps:
@@ -32,7 +19,6 @@ jobs:
         sudo apt update -y &&
         sudo apt install -y
         cmake
-        g++
         clang
         build-essential
 
@@ -41,27 +27,43 @@ jobs:
 
     - name: Configure CMake
       env:
-        CC: ${{matrix.cc}}
-        CXX: ${{matrix.cxx}}
+        CC: clang
+        CXX: clang++
       run: >-
         cmake
         -S "${{github.workspace}}"
         -B "${{github.workspace}}/build"
-        -DCMAKE_BUILD_TYPE=${{matrix.configuration}}
+        -DCMAKE_BUILD_TYPE=Release
         -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+        -DCODE_COVERAGE:BOOL=ON
 
     - name: Build
       env:
-        CC: ${{matrix.cc}}
-        CXX: ${{matrix.cxx}}
+        CC: clang
+        CXX: clang++
       working-directory: ${{github.workspace}}/build
       run: |
-        cmake --build . --config ${{matrix.configuration}}
+        cmake --build . --config Release
 
     - name: Test
       env:
-        CC: ${{matrix.cc}}
-        CXX: ${{matrix.cxx}}
+        CC: clang
+        CXX: clang++
       working-directory: "${{github.workspace}}/build"
       run: |
-        ctest -C ${{matrix.configuration}} --output-on-failure
+        ctest -C Release --output-on-failure
+
+    - name: Create Coverage Reports
+      run: |
+        sudo apt install -y lcov
+        lcov --capture --directory . --output-file coverage.info
+        lcov --remove coverage.info '/usr/*' --output-file coverage.info
+        lcov --list coverage.info
+
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v5
+      with:
+        fail_ci_if_error: true
+        files: ./coverage.info
+        flags: unittests
+        token: ${{ secrets.CODECOV_TOKEN }}
