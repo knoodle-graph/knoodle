@@ -29,7 +29,7 @@
 
 #pragma once
 
-#include <assert.h>
+#include <cassert>
 #include <iostream>
 
 #if defined(_MSC_VER)

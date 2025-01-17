@@ -5,7 +5,9 @@ FormatStyle: file
 Checks: >
   -*,
   bugprone-*,
+  -bugprone-easily-swappable-parameters,
   cert-*,
+  -cert-err33-c,
   clang-analyzer-*,
   concurrency-*,
   modernize-*,
@@ -15,6 +17,4 @@ Checks: >
   openmp-*,
   performance-*,
   portability-*,
-  cppcoreguidelines-*,
-  -cppcoreguidelines-macro-usage,
   misc-*

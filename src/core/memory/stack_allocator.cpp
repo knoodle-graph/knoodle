@@ -29,9 +29,11 @@
 
 #include "memory/stack_allocator.hpp"
 
-namespace kn {
-StackAllocator::StackAllocator() : _start(nullptr), _end(nullptr), _current(nullptr) {}
+#include <cassert>
+#include <cstddef>
+#include <cstdlib>
 
+namespace kn {
 StackAllocator::~StackAllocator() {
   assert(_start == _current);
 
@@ -43,6 +45,6 @@ StackAllocator::~StackAllocator() {
 void StackAllocator::initialize(size_t size) {
   _start = malloc(size);
   _current = _start;
-  _end = reinterpret_cast<void*>(reinterpret_cast<size_t>(_start) + size);
+  _end = reinterpret_cast<char*>(reinterpret_cast<std::byte*>(_start) + size);
 }
 }  // namespace kn

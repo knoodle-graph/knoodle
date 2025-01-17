@@ -30,31 +30,31 @@
 #pragma once
 
 #include <stdlib.h>
+#include <cstddef>
 #include <memory>
-#include <new>
 
 #include "kn_assert.hpp"
 
 namespace kn {
 class KN_CORE_API StackAllocator {
  public:
+  StackAllocator() = default;
   StackAllocator(const StackAllocator&) = delete;
   StackAllocator& operator=(const StackAllocator&) = delete;
 
-  StackAllocator();
   ~StackAllocator();
 
   void initialize(size_t size);
 
-  void* allocate(size_t size, size_t alignment = 1) {
-    if (ensure(reinterpret_cast<size_t>(_current) + size <= reinterpret_cast<size_t>(_end))) {
-      size_t ptr = reinterpret_cast<size_t>(_current);
-      size_t mod = (alignment - ptr % alignment) % alignment;
+  void* allocate(std::size_t size, std::size_t alignment = alignof(std::max_align_t)) {
+    std::size_t space = static_cast<char*>(_end) - static_cast<char*>(_current);
+    void* alignedPtr = _current;
 
-      ptr += mod;
-      _current = reinterpret_cast<void*>(ptr + size);
-      return reinterpret_cast<void*>(ptr);
+    if (std::align(alignment, size, alignedPtr, space)) {
+      _current = static_cast<char*>(alignedPtr) + size;
+      return alignedPtr;
     }
+
     return nullptr;
   }
 
@@ -63,11 +63,13 @@ class KN_CORE_API StackAllocator {
     _current = ptr;
   }
 
-  [[nodiscard]] inline size_t get_size() const { return reinterpret_cast<size_t>(_end) - reinterpret_cast<size_t>(_start); }
+  [[nodiscard]] inline size_t get_size() const {
+    return reinterpret_cast<uintptr_t>(_end) - reinterpret_cast<uintptr_t>(_start);
+  }
 
  private:
-  void* _start;
-  void* _end;
-  void* _current;
+  void* _start{nullptr};
+  void* _end{nullptr};
+  void* _current{nullptr};
 };
 }  // namespace kn

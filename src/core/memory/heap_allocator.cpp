@@ -29,6 +29,8 @@
 
 #include "memory/heap_allocator.hpp"
 
+#include <memory>
+
 namespace kn {
 std::unique_ptr<HeapAllocator> HeapAllocator::instance;
 
