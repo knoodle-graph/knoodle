@@ -110,10 +110,8 @@ constexpr auto pow5(number auto x) {
 auto sqrt(number auto x) {
   if constexpr (std::same_as<decltype(x), float>)
     return ::sqrtf(x);
-  else if constexpr (std::same_as<decltype(x), double>)
-    return ::sqrt(x);
   else
-    return sqrt(static_cast<real_t>(x));
+    return ::sqrt(static_cast<real_t>(x));
 }
 
 /** @brief Returns fast inverse square root of x.
@@ -135,7 +133,7 @@ constexpr auto rsqrt(number auto x) {
   i = 0x5f3759df - (i >> 1);
   y = *(float*)&i;
   y = y * (threehalfs - (x2 * y * y));
-  
+
   return y;
 }
 
