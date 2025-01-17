@@ -42,20 +42,7 @@ function(knoodle_create_module)
       ${KNOODLE_MODULE_PUBLIC_DEPENDENCIES}
     PRIVATE
       ${KNOODLE_MODULE_PRIVATE_DEPENDENCIES})
-
-  # Setup precompiled headers
-  if(KNOODLE_MODULE_ENABLE_PCH)
-    target_precompile_headers(${KNOODLE_MODULE_NAME}
-      INTERFACE
-        <assert.h>
-        <concepts>
-        <string>
-        <utility>
-        <vector>
-      PRIVATE
-        "${KNOODLE_ROOT_DIR}/include/${KNOODLE_MODULE_NAME}/${KNOODLE_MODULE_NAME}_pch.hpp")
-  endif()
-
+  
   # Setup export headers
   set(MODULE_API_NAME ${KNOODLE_MODULE_NAME}_api)
   string(TOUPPER ${MODULE_API_NAME} MODULE_API_NAME)
@@ -84,6 +71,12 @@ function(knoodle_create_module)
 
   install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/generated/"
     DESTINATION include/${KNOODLE_MODULE_NAME})
+
+  # force include the export header
+  target_compile_options(${KNOODLE_MODULE_NAME}
+    PRIVATE
+      $<$<CXX_COMPILER_ID:MSVC>:/FI${KNOODLE_MODULE_NAME}_export.h>
+      $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-include ${KNOODLE_MODULE_NAME}_export.h>) 
 
   include(CMakePackageConfigHelpers)
   write_basic_package_version_file(
