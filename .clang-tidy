@@ -1,6 +1,20 @@
-Checks:
-  - -*
 HeaderFileExtensions: [h, hh, hpp, hxx, inc]
-ImplementationFileExtensions: [c, cc, cpp, cxx, m, mm, java]
-HeaderFilterRegex: (source)/
+ImplementationFileExtensions: [c, cc, cpp, cxx, m, mm]
+HeaderFilterRegex: (src|include)/
 FormatStyle: file
+Checks: >
+  -*,
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  cert-*,
+  -cert-err33-c,
+  clang-analyzer-*,
+  concurrency-*,
+  modernize-*,
+  -modernize-use-trailing-return-type,
+  mpi-*,
+  objc-*,
+  openmp-*,
+  performance-*,
+  portability-*,
+  misc-*

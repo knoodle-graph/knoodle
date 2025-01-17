@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.30)
+cmake_minimum_required(VERSION 3.28)
 
 ###########################################################
 # Global settings                                         #
@@ -31,17 +31,24 @@ project(
 # Global Options                                          #
 ###########################################################
 
+set(KNOODLE_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}" CACHE INTERNAL "Root directory of the knoodle project")
+set(KNOODLE_THIRDPARTY_DIR "${KNOODLE_ROOT_DIR}/third_party" CACHE INTERNAL "Third party directory of the knoodle project")
+mark_as_advanced(KNOODLE_ROOT_DIR)
+mark_as_advanced(KNOODLE_THIRDPARTY_DIR)
+
 ###########################################################
 # Dependencies                                            #
 ###########################################################
+
+include(CTest)
+find_package(doctest)
 
 ###########################################################
 # Project Options                                         #
 ###########################################################
 
 option(KNOODLE_BUILD_EXAMPLES "Build the examples" ON)
-
-add_library(knoodle-options INTERFACE)
+option(CODE_COVERAGE "Enable coverage reporting" OFF)
 
 ###########################################################
 # Git Versioning                                          #
@@ -55,17 +62,15 @@ string(SUBSTRING "${GIT_SHA}" 0 8 GIT_SHORT_SHA)
 ###########################################################
 
 configure_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/source/knoodle/public/version.hpp.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/include/knoodle/version.hpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/include/version.hpp.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/include/version.hpp"
   ESCAPE_QUOTES)
 
 ###########################################################
 # Add intern subdirectories                               #
 ###########################################################
 
-add_subdirectory(source)
-
-include(CTest)
+add_subdirectory(src)
 
 ###########################################################
 # Installation                                            #
