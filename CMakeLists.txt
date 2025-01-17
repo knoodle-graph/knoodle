@@ -49,8 +49,6 @@ endif()
 
 option(KNOODLE_BUILD_EXAMPLES "Build the examples" ON)
 
-add_library(knoodle-options INTERFACE)
-
 ###########################################################
 # Git Versioning                                          #
 ###########################################################
@@ -66,7 +64,7 @@ configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/version.hpp.in"
   "${CMAKE_CURRENT_BINARY_DIR}/include/version.hpp"
   ESCAPE_QUOTES)
-  
+
 ###########################################################
 # Add intern subdirectories                               #
 ###########################################################
