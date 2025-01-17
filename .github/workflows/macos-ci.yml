@@ -46,7 +46,7 @@ jobs:
         cmake
         -S "${{github.workspace}}"
         -B "${{github.workspace}}/build"
-        -G "Xcode" -T buildsystem=1
+        -G "Xcode" -T "LLVM"
         -DCMAKE_BUILD_TYPE=${{matrix.configuration}}
         -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
 
