@@ -1,0 +1,67 @@
+name: MacOS Build CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: true
+      matrix:
+        configuration: [Debug, Release]
+        compiler: [gcc, clang]
+        include:
+          - compiler: gcc
+            cc: gcc
+            cxx: g++
+          - compiler: clang
+            cc: clang
+            cxx: clang++
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install Dependencies
+      run: >-
+        brew update &&
+        brew install
+        cmake
+        gcc
+        llvm
+
+    - name: Create Build Environment
+      run: cmake -E make_directory ${{github.workspace}}/build
+
+    - name: Configure CMake
+      env:
+        CC: ${{matrix.cc}}
+        CXX: ${{matrix.cxx}}
+      run: >-
+        cmake
+        -S "${{github.workspace}}"
+        -B "${{github.workspace}}/build"
+        -G "Xcode" -T buildsystem=1
+        -DCMAKE_BUILD_TYPE=${{matrix.configuration}}
+        -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+
+    - name: Build
+      env:
+        CC: ${{matrix.cc}}
+        CXX: ${{matrix.cxx}}
+      working-directory: ${{github.workspace}}/build
+      run: |
+        cmake --build . --config ${{matrix.configuration}}
+
+    - name: Test
+      env:
+        CC: ${{matrix.cc}}
+        CXX: ${{matrix.cxx}}
+      working-directory: "${{github.workspace}}/build"
+      run: |
+        ctest -C ${{matrix.configuration}} --output-on-failure
