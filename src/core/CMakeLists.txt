@@ -19,6 +19,6 @@ target_sources(core
     "${KNOODLE_ROOT_DIR}/include/core/memory/stack_allocator.hpp"
 )
 
-# knoodle_add_tests(NAME "TestMathOperations" COMMAND "math_ops_test" FILE "tests/math/kn_math_test.cpp" DEPENDS core)
+knoodle_add_tests(NAME "TestMathOperations" COMMAND "math_ops_test" FILE "${KNOODLE_ROOT_DIR}/tests/core/math/test_math_ops.cpp" DEPENDS core)
 # knoodle_add_tests(NAME "TestMemoryAllocators" COMMAND "memory_allocators_test" FILE "tests/memory/allocator_test.cpp" DEPENDS core)
 

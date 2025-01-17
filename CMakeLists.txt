@@ -41,6 +41,7 @@ mark_as_advanced(KNOODLE_THIRDPARTY_DIR)
 ###########################################################
 
 include(CTest)
+find_package(doctest)
 
 ###########################################################
 # Project Options                                         #

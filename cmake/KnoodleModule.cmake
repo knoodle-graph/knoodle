@@ -135,7 +135,7 @@ function(knoodle_add_tests)
 
     target_link_libraries(${KNOODLE_TESTS_COMMAND}
       PRIVATE
-      doctest
+      doctest::doctest
       ${KNOODLE_TESTS_DEPENDS})
 
     add_test(NAME ${KNOODLE_TESTS_NAME} COMMAND ${KNOODLE_TESTS_COMMAND})
