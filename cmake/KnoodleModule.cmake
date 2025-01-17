@@ -28,16 +28,6 @@ function(knoodle_create_module)
       $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX /wd4251>
       $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -pedantic -Werror>)
 
-  if(CODE_COVERAGE AND CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-    # Add required flags (GCC & LLVM/Clang)
-    target_compile_options(${KNOODLE_MODULE_NAME} INTERFACE
-      -O0        # no optimization
-      -g         # generate debug info
-      --coverage # sets all required flags
-    )
-    target_link_options(${KNOODLE_MODULE_NAME} INTERFACE --coverage)
-  endif()
-
   # Set the module properties
   target_include_directories(${KNOODLE_MODULE_NAME}
     PUBLIC

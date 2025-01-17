@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  push:
+    paths-ignore:
+      - 'doc/**'
+      - 'LICENSE.txt'
+      - 'README.md'
+  pull_request:
+    paths-ignore:
+      - 'doc/**'
+      - 'LICENSE.txt'
+      - 'README.md'
+
+env:
+  CTEST_OUTPUT_ON_FAILURE: ON
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v3
+    - uses: pre-commit/action@v3.0.1
+    
+  coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup environment
+        run: |
+          sudo apt update -y
+          sudo apt install -y ninja-build lcov g++
+
+      - name: Configure CMake
+        run: cmake -B build -S . -G Ninja -DCMAKE_CXX_FLAGS="-fprofile-arcs -ftest-coverage" -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Test
+        run: ctest --test-dir build --no-tests=error
+
+      - name: Create Coverage Reports
+        run: |
+          mkdir cov_report
+          lcov -c -d build/ -o cov_report/lcov.info --include "*src*" --include "*include*"
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          fail_ci_if_error: true
+          files: cov_report/lcov.info
+          flags: unittests
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  clang-tidy:
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup environment
+        run: |
+          sudo apt update -y
+          sudo apt install -y ninja-build clang++ clang-tidy-19
+
+      - name: Configure CMake
+        run: cmake -B build -S . -G Ninja -D CMAKE_CXX_COMPILER=clang++ -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_CLANG_TIDY="clang-tidy-19;-warnings-as-errors=*"
+
+      - name: Build
+        run: cmake --build build
+
+    sanitize:
+      if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
+      runs-on: ubuntu-latest
+
+      strategy:
+        matrix:
+          sanitizers: ["address", "thread", "undefined", "integer", "implicit-conversion", "nullability", "safe-stack"]
+
+      steps:
+        - uses: actions/checkout@v4
+          with:
+            submodules: recursive
+
+        - name: Setup environment
+          run: |
+            sudo apt update -y
+            sudo apt install -y ninja-build clang++
+
+        - name: Configure CMake
+          run: cmake -B build -S . -G Ninja -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_FLAGS="-fsanitize=${{ matrix.sanitizers }}"
+
+        - name: Build
+          run: cmake --build build
+
+        - name: Test
+          run: ctest --test-dir build --no-tests=error
