@@ -49,7 +49,8 @@ jobs:
       - name: Create Coverage Reports
         run: |
           mkdir cov_report
-          lcov -c -d build/ -o cov_report/lcov.info --include "*include*" --exclude "*test*" "*third_party*"
+          lcov -c -d build/ -o cov_report/lcov.info
+          lcov -r cov_report/lcov.info '/usr/*' 'third_party/*' -o cov_report/lcov.info
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
