@@ -30,6 +30,7 @@
 #include "config/config_manager.hpp"
 
 #include <algorithm>
+#include <array>
 #include <fstream>
 
 #include "string_utils.hpp"

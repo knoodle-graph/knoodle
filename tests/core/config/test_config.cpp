@@ -36,6 +36,8 @@ TEST_CASE("ConfigManager") {
   SUBCASE("load_config") {
     kn::ConfigManager& config_manager = kn::ConfigManager::get_instance();
     CHECK(config_manager.load_config("res/test.ini"));
+
+	CHECK(!config_manager.load_config("res/does_not_exist.ini"));
   }
 
   SUBCASE("get_sections") {
@@ -64,6 +66,9 @@ TEST_CASE("ConfigManager") {
     auto value = config_manager.get_int_value("Window.Width");
     CHECK(value.has_value());
     CHECK(value.value() == 1280);
+
+	auto value2 = config_manager.get_int_value("Window.Unexisting");
+    CHECK(!value2.has_value());
   }
 
   SUBCASE("get_real_value") {
@@ -71,6 +76,9 @@ TEST_CASE("ConfigManager") {
     auto value = config_manager.get_real_value("Window.AspectRatio");
     CHECK(value.has_value());
     CHECK(value.value() == doctest::Approx(1.778));
+
+	auto value2 = config_manager.get_int_value("Window.Unexisting");
+    CHECK(!value2.has_value());
   }
 
   SUBCASE("get_bool_value") {
@@ -78,5 +86,8 @@ TEST_CASE("ConfigManager") {
     auto value = config_manager.get_bool_value("Window.Fullscreen");
     CHECK(value.has_value());
     CHECK(!value.value());
+
+	auto value2 = config_manager.get_int_value("Window.Unexisting");
+    CHECK(!value2.has_value());
   }
 }
