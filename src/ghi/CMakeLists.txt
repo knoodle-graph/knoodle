@@ -8,6 +8,9 @@ target_sources(ghi
     "ghi_manager.cpp"
     
   PUBLIC
+  FILE_SET HEADERS
+  BASE_DIRS "${KNOODLE_ROOT_DIR}/include/ghi"
+  FILES
     "${KNOODLE_ROOT_DIR}/include/ghi/ghi_definitions.hpp"
     "${KNOODLE_ROOT_DIR}/include/ghi/ghi_interface.hpp"
     "${KNOODLE_ROOT_DIR}/include/ghi/ghi_manager.hpp"

@@ -12,6 +12,9 @@ target_sources(core
     "$<$<PLATFORM_ID:Windows>:os/os_windows.cpp>"
 
   PUBLIC
+  FILE_SET HEADERS
+  BASE_DIRS "${KNOODLE_ROOT_DIR}/include/core"
+  FILES
     "${KNOODLE_ROOT_DIR}/include/core/config/config_manager.hpp"
     "${KNOODLE_ROOT_DIR}/include/core/kn_assert.hpp"
     "${KNOODLE_ROOT_DIR}/include/core/log/log.hpp"
