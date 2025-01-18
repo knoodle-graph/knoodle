@@ -26,4 +26,4 @@ knoodle_add_tests(NAME "TestStringUtils " COMMAND "string_utils_test" FILE "${KN
 add_custom_command(TARGET core POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${KNOODLE_ROOT_DIR}/tests/core/res
-    $<TARGET_FILE_DIR:core>/res)
+    ${EXECUTABLE_OUTPUT_PATH}/res)
