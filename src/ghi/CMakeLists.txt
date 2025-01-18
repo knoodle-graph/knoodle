@@ -25,7 +25,10 @@ if(KNOODLE_BUILD_NULL_GHI)
       "null_ghi/null_ghi.cpp"
 
     PUBLIC
-    "${KNOODLE_ROOT_DIR}/include/ghi/null_ghi/null_ghi.hpp"
+    FILE_SET HEADERS
+    BASE_DIRS "${KNOODLE_ROOT_DIR}/include/ghi"
+    FILES
+      "${KNOODLE_ROOT_DIR}/include/ghi/null_ghi/null_ghi.hpp"
   )
 endif()
 
