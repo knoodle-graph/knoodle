@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         configuration: [Debug, Release]
         arch: [x64, arm64]
