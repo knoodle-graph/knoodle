@@ -34,7 +34,7 @@ jobs:
           doxygen
 
       - name: Configure CMake
-        run: cmake -B build -S . -G Ninja -DCMAKE_CXX_COMPILER=clang++ -DBUILD_TESTING=OFF -DDOXYGEN_OUTPUT_DIRECTORY="${{ github.workspace }}/docs"
+        run: cmake -B build -S . -G Ninja -DCMAKE_CXX_COMPILER=clang++ -DKNOODLE_BUILD_DOCS=ON -DBUILD_TESTING=OFF -DDOXYGEN_OUTPUT_DIRECTORY="${{ github.workspace }}/docs"
 
       - name: Build documentations
         run: cmake --build build --target docs

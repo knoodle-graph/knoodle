@@ -64,7 +64,7 @@ find_package(doctest)
 ###########################################################
 
 option(KNOODLE_BUILD_EXAMPLES "Build the examples" ON)
-option(KNOODLE_BUILD_DOCS "Build the documentation" ON)
+option(KNOODLE_BUILD_DOCS "Build the documentation" OFF)
 
 ###########################################################
 # Git Versioning                                          #
