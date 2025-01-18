@@ -22,3 +22,8 @@ target_sources(core
 knoodle_add_tests(NAME "TestMathOperations" COMMAND "math_ops_test" FILE "${KNOODLE_ROOT_DIR}/tests/core/math/test_math_ops.cpp" DEPENDS core)
 knoodle_add_tests(NAME "TestConfigSystem" COMMAND "config_test" FILE "${KNOODLE_ROOT_DIR}/tests/core/config/test_config.cpp" DEPENDS core)
 knoodle_add_tests(NAME "TestStringUtils " COMMAND "string_utils_test" FILE "${KNOODLE_ROOT_DIR}/tests/core/test_string_utils.cpp" DEPENDS core)
+
+add_custom_command(TARGET core POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${KNOODLE_ROOT_DIR}/tests/core/res
+    $<TARGET_FILE_DIR:core>/res)
