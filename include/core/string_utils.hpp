@@ -34,16 +34,22 @@
 
 namespace kn::string_utils {
 /** Trims a string */
-inline auto trim(const std::string_view& str) {
-  auto v = str | std::views::drop_while(isspace) | std::views::reverse | std::views::drop_while(isspace) |
-           std::views::reverse;
+inline std::string trim(const std::string_view& str) {
+  auto isSpace = [](unsigned char c) { return std::isspace(c); };
+  auto first = std::ranges::find_if_not(str, isSpace);
+  if (first == str.end()) {
+    return {};
+  }
 
-  return std::string(v.begin(), v.end());
+  auto last = std::ranges::find_if_not(std::views::reverse(str), isSpace);
+  auto baseIt = last.base();
+
+  return {first, baseIt};
 }
 
 /** Converts a string to lower case */
-inline auto to_lower(const std::string_view& str) {
+inline std::string to_lower(const std::string_view& str) {
   auto v = str | std::views::transform([](uint8_t c) { return static_cast<char>(std::tolower(c)); });
-  return std::string(v.begin(), v.end());
+  return {v.begin(), v.end()};
 }
 }  // namespace kn::string_utils
