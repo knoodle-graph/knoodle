@@ -137,7 +137,7 @@ void ConfigManager::parse_key_value(const std::string_view& line) {
   if (!_current_section.empty())
     key = _current_section + '.' + key;
   const auto value = line.substr(separator + 1);
-  _config[key] = std::string(value);
+  _config.emplace(key, std::string(value));
 }
 
 }  // namespace kn

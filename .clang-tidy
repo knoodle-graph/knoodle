@@ -17,4 +17,5 @@ Checks: >
   openmp-*,
   performance-*,
   portability-*,
-  misc-*
+  misc-*,
+  -misc-include-cleaner

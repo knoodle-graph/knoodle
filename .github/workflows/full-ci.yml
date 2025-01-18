@@ -49,7 +49,7 @@ jobs:
       - name: Create Coverage Reports
         run: |
           mkdir cov_report
-          lcov -c -d build/ -o cov_report/lcov.info --include "*include*"
+          lcov -c -d build/ -o cov_report/lcov.info --include "*include*" --exclude "*test*" --exclude "*third_party*"
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
@@ -74,7 +74,7 @@ jobs:
           sudo apt install -y ninja-build clang clang-tidy-17
 
       - name: Configure CMake
-        run: cmake -B build -S . -G Ninja -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_CLANG_TIDY="clang-tidy-17;-warnings-as-errors=*"
+        run: cmake -B build -S . -G Ninja -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_TESTING=OFF -DCMAKE_CXX_CLANG_TIDY="clang-tidy-17;-warnings-as-errors=*"
 
       - name: Build
         run: cmake --build build

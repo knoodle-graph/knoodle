@@ -34,7 +34,7 @@
 
 namespace kn::string_utils {
 /** Trims a string */
-auto trim(const std::string_view& str) {
+inline auto trim(const std::string_view& str) {
   auto v = str | std::views::drop_while(isspace) | std::views::reverse | std::views::drop_while(isspace) |
            std::views::reverse;
 
@@ -42,7 +42,7 @@ auto trim(const std::string_view& str) {
 }
 
 /** Converts a string to lower case */
-std::string to_lower(const std::string_view& str) {
+inline auto to_lower(const std::string_view& str) {
   auto v = str | std::views::transform([](uint8_t c) { return static_cast<char>(std::tolower(c)); });
   return std::string(v.begin(), v.end());
 }
