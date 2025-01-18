@@ -35,7 +35,7 @@
 TEST_CASE("ConfigManager") {
   SUBCASE("load_config") {
     kn::ConfigManager& config_manager = kn::ConfigManager::get_instance();
-    CHECK(config_manager.load_config("./res/test.ini"));
+    CHECK(config_manager.load_config("res/test.ini"));
   }
 
   SUBCASE("get_sections") {

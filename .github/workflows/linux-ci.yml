@@ -40,6 +40,7 @@ jobs:
         g++
         clang
         build-essential
+        ninja-build
 
     - name: Create Build Environment
       run: cmake -E make_directory ${{github.workspace}}/build
@@ -50,6 +51,7 @@ jobs:
         CXX: ${{matrix.cxx}}
       run: >-
         cmake
+        -G Ninja
         -S "${{github.workspace}}"
         -B "${{github.workspace}}/build"
         -DCMAKE_BUILD_TYPE=${{matrix.configuration}}
