@@ -1,7 +1,6 @@
 knoodle_create_module(
   NAME core
-  NAMESPACE knoodle
-  ENABLE_PCH On)
+  NAMESPACE knoodle)
 
 target_sources(core
   PRIVATE

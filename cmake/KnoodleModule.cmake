@@ -9,8 +9,7 @@ function(knoodle_create_module)
 
   set(_MULTI_VALUE_ARGS)
 
-  set(_OPTION_ARGS
-    ENABLE_PCH)
+  set(_OPTION_ARGS)
 
   cmake_parse_arguments(KNOODLE_MODULE
     "${_OPTION_ARGS}"
