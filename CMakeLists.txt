@@ -64,7 +64,7 @@ find_package(doctest)
 ###########################################################
 
 option(KNOODLE_BUILD_EXAMPLES "Build the examples" ON)
-option(CODE_COVERAGE "Enable coverage reporting" OFF)
+option(KNOODLE_BUILD_DOCS "Build the documentation" ON)
 
 ###########################################################
 # Git Versioning                                          #
@@ -87,6 +87,21 @@ configure_file(
 ###########################################################
 
 add_subdirectory(src)
+
+###########################################################
+# Documentation                                           #
+###########################################################
+
+if(KNOODLE_BUILD_DOCS)
+  find_package(Doxygen REQUIRED)
+  if(DOXYGEN_FOUND)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
+    doxygen_add_docs(docs
+      ${PROJECT_SOURCE_DIR}/include
+      CONFIG_FILE ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
+      COMMENT "Generate html pages")
+  endif()
+endif()
 
 ###########################################################
 # Installation                                            #
