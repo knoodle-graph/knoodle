@@ -95,6 +95,14 @@ add_subdirectory(src)
 if(KNOODLE_BUILD_DOCS)
   find_package(Doxygen REQUIRED)
   if(DOXYGEN_FOUND)
+    if(DOXYGEN_OUTPUT_DIRECTORY STREQUAL "")
+      set(DOXYGEN_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/docs")
+    endif()
+
+    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+      set(CLANG_ASSISTED_PARSING Yes)
+    endif()
+
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
     doxygen_add_docs(docs
       ${PROJECT_SOURCE_DIR}/include
