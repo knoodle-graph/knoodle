@@ -77,7 +77,7 @@ TEST_CASE("ConfigManager") {
     CHECK(value.has_value());
     CHECK(value.value() == doctest::Approx(1.778));
 
-    auto value2 = config_manager.get_int_value("Window.Unexisting");
+    auto value2 = config_manager.get_real_value("Window.Unexisting");
     CHECK(!value2.has_value());
   }
 
@@ -87,7 +87,7 @@ TEST_CASE("ConfigManager") {
     CHECK(value.has_value());
     CHECK(!value.value());
 
-    auto value2 = config_manager.get_int_value("Window.Unexisting");
+    auto value2 = config_manager.get_bool_value("Window.Unexisting");
     CHECK(!value2.has_value());
   }
 }
