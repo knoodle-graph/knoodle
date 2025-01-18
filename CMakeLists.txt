@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 3.25)
 
 ###########################################################
 # Global settings                                         #
@@ -26,6 +26,22 @@ project(
   DESCRIPTION "A tool for creating procedural textures using a node-based graph editor."
   HOMEPAGE_URL "knoodlegraph.org"
   LANGUAGES CXX C)
+
+enable_testing()
+
+###########################################################
+# Redirect outputs                                        #
+###########################################################
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin CACHE INTERNAL "" FORCE)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${EXECUTABLE_OUTPUT_PATH} CACHE INTERNAL "" FORCE)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib CACHE INTERNAL "" FORCE)
+
+get_property(GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+if(GENERATOR_IS_MULTI_CONFIG)
+  set(TESTS_OUTPUT_DIR ${EXECUTABLE_OUTPUT_PATH}/tests/$<CONFIG>/ CACHE INTERNAL "" FORCE)
+else()
+  set(TESTS_OUTPUT_DIR ${EXECUTABLE_OUTPUT_PATH}/tests/ CACHE INTERNAL "" FORCE)
+endif()
 
 ###########################################################
 # Global Options                                          #
@@ -81,6 +97,11 @@ if(CMAKE_SKIP_INSTALL_RULES)
 endif()
 
 include(GNUInstallDirs)
+
+install(DIRECTORY
+  "${CMAKE_CURRENT_SOURCE_DIR}/config/"
+  DESTINATION "config"
+  FILES_MATCHING PATTERN "*.ini")
 
 set(CPACK_PACKAGE_FILE_NAME
   "${CMAKE_PROJECT_NAME}-${CMAKE_PROJECT_VERSION}-${GIT_SHORT_SHA}-${CMAKE_SYSTEM_NAME}-${CMAKE_BUILD_TYPE}-${CMAKE_CXX_COMPILER_ID}-${CMAKE_CXX_COMPILER_VERSION}"

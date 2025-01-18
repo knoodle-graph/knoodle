@@ -8,9 +8,10 @@ on:
 jobs:
   build:
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         configuration: [Debug, Release]
+        arch: [x64, arm64]
         compiler: [gcc, clang]
         include:
           - compiler: gcc
@@ -19,8 +20,12 @@ jobs:
           - compiler: clang
             cc: clang
             cxx: clang++
+          - arch: x64
+            os: ubuntu-latest
+          - arch: arm64
+            os: rasp-arm64
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v4
@@ -35,6 +40,7 @@ jobs:
         g++
         clang
         build-essential
+        ninja-build
 
     - name: Create Build Environment
       run: cmake -E make_directory ${{github.workspace}}/build
@@ -45,6 +51,7 @@ jobs:
         CXX: ${{matrix.cxx}}
       run: >-
         cmake
+        -G Ninja
         -S "${{github.workspace}}"
         -B "${{github.workspace}}/build"
         -DCMAKE_BUILD_TYPE=${{matrix.configuration}}

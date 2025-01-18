@@ -29,8 +29,9 @@
 
 #pragma once
 
+#include "common.hpp"
+
 namespace kn::math {
-using real_t = float;
 
 template <typename T>
 concept number = std::integral<T> or std::floating_point<T>;
