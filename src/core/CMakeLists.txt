@@ -5,17 +5,21 @@ knoodle_create_module(
 target_sources(core
   PRIVATE
     
-    "config/config_manager.cpp"    
+    "config/config_manager.cpp"
+    "log/log.cpp"
     "memory/stack_allocator.cpp"
     "memory/stack_allocator.cpp"
+    "$<$<PLATFORM_ID:Windows>:os/os_windows.cpp>"
 
   PUBLIC
-    "${KNOODLE_ROOT_DIR}/include/core/kn_assert.hpp"
     "${KNOODLE_ROOT_DIR}/include/core/config/config_manager.hpp"
+    "${KNOODLE_ROOT_DIR}/include/core/kn_assert.hpp"
+    "${KNOODLE_ROOT_DIR}/include/core/log/log.hpp"
     "${KNOODLE_ROOT_DIR}/include/core/math/kn_math.hpp"
     "${KNOODLE_ROOT_DIR}/include/core/memory/heap_allocator.hpp"
     "${KNOODLE_ROOT_DIR}/include/core/memory/pool_allocator.hpp"
     "${KNOODLE_ROOT_DIR}/include/core/memory/stack_allocator.hpp"
+    "${KNOODLE_ROOT_DIR}/include/core/os/os.hpp"
 )
 
 knoodle_add_tests(NAME "TestMathOperations" COMMAND "math_ops_test" FILE "${KNOODLE_ROOT_DIR}/tests/core/math/test_math_ops.cpp" DEPENDS core)

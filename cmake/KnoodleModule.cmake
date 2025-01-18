@@ -7,7 +7,9 @@ function(knoodle_create_module)
     NAME
     NAMESPACE)
 
-  set(_MULTI_VALUE_ARGS)
+  set(_MULTI_VALUE_ARGS
+    PUBLIC_DEPENDS
+    PRIVATE_DEPENDS)
 
   set(_OPTION_ARGS)
 
@@ -38,9 +40,9 @@ function(knoodle_create_module)
   # Set dependencies
   target_link_libraries(${KNOODLE_MODULE_NAME}
     PUBLIC
-      ${KNOODLE_MODULE_PUBLIC_DEPENDENCIES}
+      ${KNOODLE_MODULE_PUBLIC_DEPENDS}
     PRIVATE
-      ${KNOODLE_MODULE_PRIVATE_DEPENDENCIES})
+      ${KNOODLE_MODULE_PRIVATE_DEPENDS})
   
   # Setup export headers
   set(MODULE_API_NAME ${KNOODLE_MODULE_NAME}_api)

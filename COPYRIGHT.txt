@@ -7,3 +7,8 @@ Files: *
 Comment: Knoodle Engine
 Copyright: 2025-present, Knoodle Graph
 License: MIT
+
+FILES: third_party/doctest/*
+Comment: doctest
+Copyright: 2016-2023, Viktor Kirilov
+License: MIT
