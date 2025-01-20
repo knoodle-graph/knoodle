@@ -65,9 +65,6 @@ jobs:
       run: cmake -E make_directory ${{github.workspace}}/build
 
     - name: Configure CMake
-      env:
-        CC: ${{matrix.cc}}
-        CXX: ${{matrix.cxx}}
       run: >-
         cmake
         -G Ninja
@@ -75,19 +72,14 @@ jobs:
         -B "${{github.workspace}}/build"
         -DCMAKE_BUILD_TYPE=${{matrix.configuration}}
         -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+        -D-DCMAKE_CXX_COMPILER=${{matrix.cxx}}
 
     - name: Build
-      env:
-        CC: ${{matrix.cc}}
-        CXX: ${{matrix.cxx}}
       working-directory: ${{github.workspace}}/build
       run: |
         cmake --build . --config ${{matrix.configuration}}
 
     - name: Test
-      env:
-        CC: ${{matrix.cc}}
-        CXX: ${{matrix.cxx}}
       working-directory: "${{github.workspace}}/build"
       run: |
         ctest -C ${{matrix.configuration}} --output-on-failure
