@@ -9,6 +9,7 @@
 ---
 
 ![GitHub Release](https://img.shields.io/github/v/release/knoodle-graph/knoodle?display_name=release&style=flat)
+![GitHub repo size](https://img.shields.io/github/repo-size/knoodle-graph/knoodle?label=Repo%20Size)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/9925/badge)](https://www.bestpractices.dev/projects/9925)
 [![codecov](https://codecov.io/gh/knoodle-graph/knoodle/graph/badge.svg?token=GFYTP2OQSH)](https://codecov.io/gh/knoodle-graph/knoodle)
