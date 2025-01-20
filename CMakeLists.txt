@@ -111,8 +111,14 @@ target_include_directories(${KNOODLE_MODULE_NAME}
 
     $<INSTALL_INTERFACE:include>)
 
+###########################################################
+# Add intern subdirectories                               #
+###########################################################
+
+add_subdirectory(source)
+
 include(GNUInstallDirs)
-install(TARGETS ${KNOODLE_MODULE_NAME}
+install(TARGETS ${KNOODLE_MODULE_NAME} "vulkan-ghi"
       RUNTIME
         COMPONENT Runtime
         DESTINATION bin
@@ -132,12 +138,6 @@ install(FILES
   "${CMAKE_BINARY_DIR}/source/knoodle_version.hpp"
   "${PROJECT_BINARY_DIR}/source/knoodle_engine_api.h"
   DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
-
-###########################################################
-# Add intern subdirectories                               #
-###########################################################
-
-add_subdirectory(source)
 
 ###########################################################
 # Documentation                                           #

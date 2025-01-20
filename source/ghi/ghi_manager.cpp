@@ -30,6 +30,9 @@
 #include "ghi/ghi_manager.hpp"
 #include "core/config/config_manager.hpp"
 #include "core/log/log.hpp"
+#include "string_utils.hpp"
+
+#include <array>
 
 #if KN_BUILD_NULL_GHI
 #include "ghi/null_ghi/null_ghi.hpp"
@@ -66,6 +69,13 @@ IGHI* GHIManager::create_ghi(const std::string_view& hint /*= ""*/) {
     KN_LOG(LogGHI, Error, "No GHI specified in the configuration file.");
     return nullptr;
 #endif
+  }
+
+  const std::array<std::string, 2> vulkan_names = {"vulkan", "vk"};
+
+  if (std::any_of(vulkan_names.begin(), vulkan_names.end(),
+                  [ghi_name](std::string name) { return string_utils::to_lower(ghi_name) == name; })) {
+    ghi_name = "vulkan-ghi";
   }
 
   KN_LOG(LogGHI, Info, "Creating GHI: {}", ghi_name);

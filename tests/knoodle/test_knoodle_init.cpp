@@ -1,5 +1,5 @@
 /**************************************************************************/
-/* ghi_interface.hpp                                                      */
+/* test_knoodle_init.cpp                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                                Knoodle                                 */
@@ -27,31 +27,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include <doctest/doctest.h>
 
-#include <cstdint>
+#include "knoodle/knoodle.hpp"
 
-#include "ghi/ghi_definitions.hpp"
-
-namespace kn {
-struct GHIDesc {
-  uint8_t enable_validation_layers : 1;
-};
-
-class IGHI {
- public:
-  virtual ~IGHI() = default;
-
-  /**
-   * Initialize the GHI.
-   * @param[in] desc The description of the GHI.
-   * @return True if the GHI was successfully initialized, false otherwise.
-   */
-  virtual bool initialize(const GHIDesc* desc) = 0;
-
-  /**
-   * Shutdown the GHI and release all its resources.
-   */
-  virtual void shutdown() = 0;
-};
-}  // namespace kn
+TEST_CASE("KnoodleEngine") {
+  SUBCASE("init") {
+    CHECK(kn::knoodle_init());
+  }
+}

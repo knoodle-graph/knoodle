@@ -51,6 +51,8 @@ class GHIManager {
 
   KN_API IGHI* create_ghi(const std::string_view& hint = "");
 
+  inline IGHI* get_ghi() const { return _ghi.get(); }
+
   /**
    * Get the GHI manager instance.
    * @return The GHI manager instance.

@@ -1,5 +1,6 @@
 /**************************************************************************/
-/* ghi_interface.hpp                                                      */
+/**************************************************************************/
+/* vulkan_ghi.hpp                                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                                Knoodle                                 */
@@ -29,29 +30,41 @@
 
 #pragma once
 
-#include <cstdint>
+#include "ghi_interface.hpp"
+#include "vulkan_ghi_api.hpp"
 
-#include "ghi/ghi_definitions.hpp"
+#include <vulkan/vulkan.h>
 
 namespace kn {
-struct GHIDesc {
-  uint8_t enable_validation_layers : 1;
-};
 
-class IGHI {
+/**
+ * @brief Checks if the GHI is supported on the current platform.
+ */
+extern "C" KN_VULKAN_API bool is_supported();
+
+/**
+ * @brief Creates a new GHI instance.
+ */
+extern "C" KN_VULKAN_API IGHI* create_ghi();
+
+class VulkanGHI : public IGHI {
  public:
-  virtual ~IGHI() = default;
+  KN_VULKAN_API bool initialize(const GHIDesc* desc) override;
+  KN_VULKAN_API void shutdown() override;
 
-  /**
-   * Initialize the GHI.
-   * @param[in] desc The description of the GHI.
-   * @return True if the GHI was successfully initialized, false otherwise.
-   */
-  virtual bool initialize(const GHIDesc* desc) = 0;
+ private:
+  bool create_instance(const GHIDesc* desc);
+  bool check_validation_layer_support();
 
-  /**
-   * Shutdown the GHI and release all its resources.
-   */
-  virtual void shutdown() = 0;
+ private:
+  VkInstance _instance{VK_NULL_HANDLE};
+  VkDebugUtilsMessengerEXT _debugMessenger{VK_NULL_HANDLE};
+  VkPhysicalDevice _physicalDevice{VK_NULL_HANDLE};
+  VkSampleCountFlagBits _msaaSamples{VK_SAMPLE_COUNT_1_BIT};
+  VkDevice _device{VK_NULL_HANDLE};
+
+  VkQueue _graphicsQueue{VK_NULL_HANDLE};
+  VkQueue _computeQueue{VK_NULL_HANDLE};
 };
+
 }  // namespace kn

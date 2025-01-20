@@ -1,5 +1,5 @@
 /**************************************************************************/
-/* ghi_interface.hpp                                                      */
+/* knoodle.hpp                                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                                Knoodle                                 */
@@ -29,29 +29,17 @@
 
 #pragma once
 
-#include <cstdint>
-
-#include "ghi/ghi_definitions.hpp"
+#include "common.hpp"
 
 namespace kn {
-struct GHIDesc {
-  uint8_t enable_validation_layers : 1;
-};
+/**
+ * @brief Initialize the Knoodle engine and its modules.
+ */
+extern "C" KN_API bool knoodle_init();
 
-class IGHI {
- public:
-  virtual ~IGHI() = default;
+/**
+ * @brief Shutdown the Knoodle engine and its modules.
+ */
+extern "C" KN_API void knoodle_shutdown();
 
-  /**
-   * Initialize the GHI.
-   * @param[in] desc The description of the GHI.
-   * @return True if the GHI was successfully initialized, false otherwise.
-   */
-  virtual bool initialize(const GHIDesc* desc) = 0;
-
-  /**
-   * Shutdown the GHI and release all its resources.
-   */
-  virtual void shutdown() = 0;
-};
 }  // namespace kn

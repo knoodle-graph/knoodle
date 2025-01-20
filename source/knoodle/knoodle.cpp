@@ -1,5 +1,5 @@
 /**************************************************************************/
-/* ghi_interface.hpp                                                      */
+/* knoodle.cpp                                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                                Knoodle                                 */
@@ -27,31 +27,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "knoodle/knoodle.hpp"
 
-#include <cstdint>
-
-#include "ghi/ghi_definitions.hpp"
+#include "ghi/ghi_manager.hpp"
 
 namespace kn {
-struct GHIDesc {
-  uint8_t enable_validation_layers : 1;
-};
+bool knoodle_init() {
+  IGHI* _ghi = GHIManager::get_instance().create_ghi("Vulkan");
+  if (!_ghi)
+    return false;
 
-class IGHI {
- public:
-  virtual ~IGHI() = default;
+  GHIDesc desc = {};
+  desc.enable_validation_layers = true;
 
-  /**
-   * Initialize the GHI.
-   * @param[in] desc The description of the GHI.
-   * @return True if the GHI was successfully initialized, false otherwise.
-   */
-  virtual bool initialize(const GHIDesc* desc) = 0;
+  if (!_ghi->initialize(&desc))
+    return false;
 
-  /**
-   * Shutdown the GHI and release all its resources.
-   */
-  virtual void shutdown() = 0;
-};
+  return true;
+}
+
+void knoodle_shutdown() {
+  if (IGHI* _ghi = GHIManager::get_instance().get_ghi())
+    _ghi->shutdown();
+}
 }  // namespace kn
