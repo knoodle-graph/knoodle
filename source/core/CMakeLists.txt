@@ -6,6 +6,7 @@ target_sources("knoodle-engine"
     "${CMAKE_CURRENT_SOURCE_DIR}/memory/stack_allocator.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/$<$<PLATFORM_ID:Windows>:os/os_windows.cpp>"
     "${CMAKE_CURRENT_SOURCE_DIR}/$<$<PLATFORM_ID:Linux>:os/os_linux.cpp>"
+    "${CMAKE_CURRENT_SOURCE_DIR}/$<$<PLATFORM_ID:Darwin>:os/os_linux.cpp>"
 
   PUBLIC
   FILE_SET HEADERS

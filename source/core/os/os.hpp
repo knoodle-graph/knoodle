@@ -80,7 +80,7 @@ class os {
    * @return pointer to the loaded library.
    */
   [[nodiscard]] inline static Library* load_library(std::filesystem::path path) {
-    return load_library_impl(path);
+    return load_library_impl(std::move(path));
   }
 
   /**

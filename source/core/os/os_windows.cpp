@@ -35,7 +35,7 @@
 
 namespace kn {
 os::Library* os::load_library_impl(std::filesystem::path path) {
-  return new Library(::LoadLibraryW(path.c_str()), std::move(path));
+  return new Library(::LoadLibraryW(path.c_str()), path);
 }
 
 bool os::free_library_impl(void* library) {

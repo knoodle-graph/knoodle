@@ -33,7 +33,7 @@
 
 namespace kn {
 os::Library* os::load_library_impl(std::filesystem::path path) {
-  return new Library(::dlopen(path.c_str(), RTLD_LAZY), std::move(path));
+  return new Library(::dlopen(path.c_str(), RTLD_LAZY), path);
 }
 
 bool os::free_library_impl(void* library) {
