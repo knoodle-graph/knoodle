@@ -1,6 +1,6 @@
 HeaderFileExtensions: [h, hh, hpp, hxx, inc]
 ImplementationFileExtensions: [c, cc, cpp, cxx, m, mm]
-HeaderFilterRegex: (src|include)/
+HeaderFilterRegex: (source)/
 FormatStyle: file
 Checks: >
   -*,
