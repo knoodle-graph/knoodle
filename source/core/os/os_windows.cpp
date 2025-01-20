@@ -34,8 +34,8 @@
 #include <windows.h>
 
 namespace kn {
-os::Library* os::load_library_impl(const std::filesystem::path& path) {
-  return new Library(::LoadLibraryW(path.c_str()), path);
+os::Library* os::load_library_impl(std::filesystem::path path) {
+  return new Library(::LoadLibraryW(path.c_str()), std::move(path));
 }
 
 bool os::free_library_impl(void* library) {

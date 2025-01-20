@@ -32,8 +32,8 @@
 #include <dlfcn.h>
 
 namespace kn {
-os::Library* os::load_library_impl(const std::filesystem::path& path) {
-  return new Library(::dlopen(path.c_str(), RTLD_LAZY), path);
+os::Library* os::load_library_impl(std::filesystem::path path) {
+  return new Library(::dlopen(path.c_str(), RTLD_LAZY), std::move(path));
 }
 
 bool os::free_library_impl(void* library) {

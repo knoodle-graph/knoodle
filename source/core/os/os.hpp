@@ -41,7 +41,7 @@ class os {
   class Library {
     friend class os;
 
-    explicit Library(void* handle, const std::filesystem::path& path) : _handle(handle), _path(path) {}
+    explicit Library(void* handle, std::filesystem::path path) : _handle(handle), _path(std::move(path)) {}
 
    public:
     Library(const Library&) = delete;
@@ -62,7 +62,7 @@ class os {
     [[nodiscard]] inline void* get_os_handle() const { return _handle; }
 
     /** Returns the path of the library. */
-    [[nodiscard]] inline const std::filesystem::path& get_path() const { return _path; }
+    [[nodiscard]] inline std::filesystem::path get_path() const { return _path; }
 
     /** Checks if the library is loaded. */
     [[nodiscard]] inline bool is_loaded() const { return _handle != nullptr; }
@@ -79,7 +79,7 @@ class os {
    * @param[in] path The path to the dynamic library.
    * @return pointer to the loaded library.
    */
-  [[nodiscard]] inline static Library* load_library(const std::filesystem::path& path) {
+  [[nodiscard]] inline static Library* load_library(std::filesystem::path path) {
     return load_library_impl(path);
   }
 
@@ -90,7 +90,7 @@ class os {
   inline static bool free_library(void* library) { return free_library_impl(library); }
 
  private:
-  static KN_API Library* load_library_impl(const std::filesystem::path& path);
+  static KN_API Library* load_library_impl(std::filesystem::path path);
   static KN_API bool free_library_impl(void* library);
   static KN_API void* get_function_impl(void* library, const char* name);
 };
