@@ -1,18 +1,26 @@
 name: MacOS Build CI
 
 on:
-  pull_request:
-    branches: [main]
-    paths-ignore:
-        - 'doc/**'
-        - 'misc/**'
-        - 'LICENSE.txt'
-        - 'README.md'
   push:
     branches: [main]
     paths-ignore:
       - 'doc/**'
       - 'misc/**'
+      - '.issuetracker'
+      - 'CODE_OF_CONDUCT.md'
+      - 'CONTRIBUTING.md'
+      - 'knoodle-splash.svg'
+      - 'LICENSE.txt'
+      - 'README.md'
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - 'doc/**'
+      - 'misc/**'
+      - '.issuetracker'
+      - 'CODE_OF_CONDUCT.md'
+      - 'CONTRIBUTING.md'
+      - 'knoodle-splash.svg'
       - 'LICENSE.txt'
       - 'README.md'
 
