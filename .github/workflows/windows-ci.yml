@@ -2,8 +2,19 @@ name: Windows Build CI
 
 on:
   pull_request:
+    branches: [main]
+    paths-ignore:
+        - 'doc/**'
+        - 'misc/**'
+        - 'LICENSE.txt'
+        - 'README.md'
   push:
     branches: [main]
+    paths-ignore:
+      - 'doc/**'
+      - 'misc/**'
+      - 'LICENSE.txt'
+      - 'README.md'
 
 jobs:
   build:
