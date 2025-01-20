@@ -25,12 +25,12 @@ jobs:
           submodules: recursive
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2.20
+        uses: github/codeql-action/init@latest
         with:
           languages: ${{ matrix.language }}
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v2.20
+        uses: github/codeql-action/autobuild@latest
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2.20
+        uses: github/codeql-action/analyze@latest

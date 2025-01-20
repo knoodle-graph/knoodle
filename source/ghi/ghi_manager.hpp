@@ -32,8 +32,8 @@
 #include <memory>
 #include <string_view>
 
-#include "ghi/ghi_interface.hpp"
 #include "core/os/os.hpp"
+#include "ghi/ghi_interface.hpp"
 
 namespace kn {
 

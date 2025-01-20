@@ -25,7 +25,9 @@ knoodle_add_tests(NAME "TestMathOperations" COMMAND "math_ops_test" FILE "${KNOO
 knoodle_add_tests(NAME "TestConfigSystem" COMMAND "config_test" FILE "${KNOODLE_ROOT_DIR}/tests/core/config/test_config.cpp" DEPENDS "knoodle-engine")
 knoodle_add_tests(NAME "TestStringUtils " COMMAND "string_utils_test" FILE "${KNOODLE_ROOT_DIR}/tests/core/test_string_utils.cpp" DEPENDS "knoodle-engine")
 
-add_custom_command(TARGET "config_test" POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${KNOODLE_ROOT_DIR}/tests/core/res
-    ${CMAKE_CURRENT_BINARY_DIR}/res)
+if(BUILD_TESTING)
+  add_custom_command(TARGET "config_test" POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_directory
+      ${KNOODLE_ROOT_DIR}/tests/core/res
+      ${CMAKE_CURRENT_BINARY_DIR}/res)
+endif()

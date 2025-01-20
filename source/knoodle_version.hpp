@@ -29,10 +29,12 @@
 
 #pragma once
 
+// clang-format off
 namespace kn {
 inline constexpr std::string_view kVersion = "@KNOODLE_VERSION@";
-inline constexpr int32_t kVersionMajor { @KNOODLE_VERSION_MAJOR @ };
-inline constexpr int32_t kVersionMinor { @KNOODLE_VERSION_MINOR @ };
-inline constexpr int32_t kVersionPatch { @KNOODLE_VERSION_PATCH @ };
+inline constexpr int32_t kVersionMajor { @KNOODLE_VERSION_MAJOR@ };
+inline constexpr int32_t kVersionMinor { @KNOODLE_VERSION_MINOR@ };
+inline constexpr int32_t kVersionPatch { @KNOODLE_VERSION_PATCH@ };
 inline constexpr std::string_view kGitSha = "@GIT_SHA@";
 } // namespace kn
+// clang-format on
