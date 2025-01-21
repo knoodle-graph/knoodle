@@ -34,6 +34,7 @@
 
 #include <array>
 #include <cassert>
+#include <set>
 
 namespace kn {
 constexpr std::array<const char*, 1> validation_layers{"VK_LAYER_KHRONOS_validation"};
@@ -57,6 +58,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback([[maybe_unused]] VkDebugUtilsMessa
 }
 
 bool is_supported() {
+  KN_LOG(LogVulkan, Info, "Checking Vulkan GHI support");
   auto vulkan_lib = std::unique_ptr<os::Library>(os::load_library("vulkan-1"));
   if (!vulkan_lib->is_loaded()) {
     return false;
@@ -91,7 +93,15 @@ IGHI* create_ghi() {
 bool VulkanGHI::initialize(const GHIDesc* desc) {
   assert(desc);
 
+  KN_LOG(LogVulkan, Info, "Initializing Vulkan GHI");
+
   if (!create_instance(desc))
+    return false;
+
+  if (!setup_debug_messenger(desc))
+    return false;
+
+  if (!setup_physical_device(desc))
     return false;
 
   return true;
@@ -100,7 +110,10 @@ bool VulkanGHI::initialize(const GHIDesc* desc) {
 void VulkanGHI::shutdown() {}
 
 bool VulkanGHI::create_instance(const GHIDesc* desc) {
+  KN_LOG(LogVulkan, Info, "Creating Vulkan instance");
+
   if (desc->enable_validation_layers && !check_validation_layer_support()) {
+    KN_LOG(LogVulkan, Error, "Validation layers requested, but not available!");
     return false;
   }
 
@@ -138,7 +151,8 @@ bool VulkanGHI::create_instance(const GHIDesc* desc) {
     create_info.ppEnabledLayerNames = nullptr;
   }
 
-  if (vkCreateInstance(&create_info, nullptr, &_instance) != VK_SUCCESS) {
+  if (VkResult result = vkCreateInstance(&create_info, nullptr, &_instance); result != VK_SUCCESS) {
+    KN_LOG(LogVulkan, Error, "Failed to create Vulkan instance. Error: {}", result);
     return false;
   }
 
@@ -163,6 +177,155 @@ bool VulkanGHI::check_validation_layer_support() {
     if (!layer_found) {
       return false;
     }
+  }
+
+  return true;
+}
+
+bool VulkanGHI::setup_debug_messenger(const GHIDesc* desc) {
+  if (!desc->enable_validation_layers)
+    return true;
+
+  VkDebugUtilsMessengerCreateInfoEXT createInfo = {};
+  createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+  createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
+                               VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+                               VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+  createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+                           VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+                           VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+  createInfo.pfnUserCallback = debug_callback;
+
+  auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(_instance, "vkCreateDebugUtilsMessengerEXT");
+  if (func != nullptr) {
+    return func(_instance, &createInfo, nullptr, &_debugMessenger) == VK_SUCCESS;
+  }
+
+  return false;
+}
+
+bool VulkanGHI::setup_physical_device(const GHIDesc*) {
+  uint32_t device_count = 0;
+  vkEnumeratePhysicalDevices(_instance, &device_count, nullptr);
+
+  if (device_count == 0) {
+    KN_LOG(LogVulkan, Error, "Failed to find GPUs with Vulkan support");
+    return false;
+  }
+
+  std::vector<VkPhysicalDevice> devices(device_count);
+  vkEnumeratePhysicalDevices(_instance, &device_count, devices.data());
+
+  for (const auto& device : devices) {
+    VkPhysicalDeviceProperties device_properties;
+    vkGetPhysicalDeviceProperties(device, &device_properties);
+    if (device_properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+      _physicalDevice = device;
+      break;
+    }
+  }
+
+  if (_physicalDevice == VK_NULL_HANDLE) {
+    KN_LOG(LogVulkan, Error, "Failed to find a suitable GPU");
+    return false;
+  }
+
+  KN_LOG(LogVulkan, Info, "Found a suitable GPU. Device: {}", device_properties.deviceName);
+
+  return true;
+}
+
+bool VulkanGHI::setup_logical_device(const GHIDesc* desc) {
+  // Find queue families
+  uint32_t queue_family_count = 0;
+  vkGetPhysicalDeviceQueueFamilyProperties(_physicalDevice, &queue_family_count, nullptr);
+
+  std::vector<VkQueueFamilyProperties> queue_families(queue_family_count);
+  vkGetPhysicalDeviceQueueFamilyProperties(_physicalDevice, &queue_family_count, queue_families.data());
+
+  _graphicsQueueFamilyIndex = -1;
+  int32_t compute_family_index = -1;
+  for (uint32_t i = 0; i < queue_family_count; ++i) {
+    if (queue_families[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+      _graphicsQueueFamilyIndex = i;
+    }
+    if (queue_families[i].queueFlags & VK_QUEUE_COMPUTE_BIT) {
+      compute_family_index = i;
+    }
+  }
+
+  if (_graphicsQueueFamilyIndex == -1 || compute_family_index == -1) {
+    KN_LOG(LogVulkan, Error, "Failed to find queue families");
+    return false;
+  }
+
+  // Create logical device
+  std::vector<VkDeviceQueueCreateInfo> queue_create_infos;
+  std::set<int32_t> unique_queue_families = {_graphicsQueueFamilyIndex, compute_family_index};
+  float queue_priority = 1.0f;
+
+  for (int32_t queue_family : unique_queue_families) {
+    VkDeviceQueueCreateInfo queue_create_info{};
+    queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    queue_create_info.queueFamilyIndex = queue_family;
+    queue_create_info.queueCount = 1;
+    queue_create_info.pQueuePriorities = &queue_priority;
+    queue_create_infos.push_back(queue_create_info);
+  }
+
+  VkPhysicalDeviceFeatures device_features{};
+
+  if (desc->enable_sample_anisotropy)
+    device_features.samplerAnisotropy = VK_TRUE;
+
+  if (desc->use_shader_float_64)
+    device_features.shaderFloat64 = VK_TRUE;
+
+  VkDeviceCreateInfo create_info{};
+  create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+  create_info.queueCreateInfoCount = static_cast<uint32_t>(queue_create_infos.size());
+  create_info.pQueueCreateInfos = queue_create_infos.data();
+  create_info.pEnabledFeatures = &device_features;
+  create_info.enabledExtensionCount = 0;
+  create_info.ppEnabledExtensionNames = nullptr;
+  create_info.enabledLayerCount = static_cast<uint32_t>(validation_layers.size());
+  create_info.ppEnabledLayerNames = validation_layers.data();
+
+  if (vkCreateDevice(_physicalDevice, &create_info, nullptr, &_device) != VK_SUCCESS) {
+    KN_LOG(LogVulkan, Error, "Failed to create logical device");
+    return false;
+  }
+
+  vkGetDeviceQueue(_device, _graphicsQueueFamilyIndex, 0, &_graphicsQueue);
+  vkGetDeviceQueue(_device, compute_family_index, 0, &_computeQueue);
+
+  return true;
+}
+
+bool VulkanGHI::setup_command_pool(const GHIDesc*) {
+  VkCommandPoolCreateInfo pool_info{};
+  pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+  pool_info.queueFamilyIndex = _graphicsQueueFamilyIndex;
+  pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+  if (vkCreateCommandPool(_device, &pool_info, nullptr, &_commandPool) != VK_SUCCESS) {
+    KN_LOG(LogVulkan, Error, "Failed to create command pool");
+    return false;
+  }
+  return true;
+}
+
+bool VulkanGHI::setup_command_buffer(const GHIDesc*) {
+  _command_buffers.resize(1);
+
+  VkCommandBufferAllocateInfo alloc_info{};
+  alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+  alloc_info.commandPool = _commandPool;
+  alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+  alloc_info.commandBufferCount = static_cast<uint32_t>(_command_buffers.size());
+
+  if (vkAllocateCommandBuffers(_device, &alloc_info, _command_buffers.data()) != VK_SUCCESS) {
+    KN_LOG(LogVulkan, Error, "Failed to allocate command buffers");
+    return false;
   }
 
   return true;

@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include <vector>
+
 #include "ghi_interface.hpp"
 #include "vulkan_ghi_api.hpp"
 
@@ -55,6 +57,11 @@ class VulkanGHI : public IGHI {
  private:
   bool create_instance(const GHIDesc* desc);
   bool check_validation_layer_support();
+  bool setup_debug_messenger(const GHIDesc* desc);
+  bool setup_physical_device(const GHIDesc* desc);
+  bool setup_logical_device(const GHIDesc* desc);
+  bool setup_command_pool(const GHIDesc* desc);
+  bool setup_command_buffer(const GHIDesc* desc);
 
  private:
   VkInstance _instance{VK_NULL_HANDLE};
@@ -65,6 +72,10 @@ class VulkanGHI : public IGHI {
 
   VkQueue _graphicsQueue{VK_NULL_HANDLE};
   VkQueue _computeQueue{VK_NULL_HANDLE};
+
+  int32_t _graphicsQueueFamilyIndex;
+  VkCommandPool _commandPool{VK_NULL_HANDLE};
+  std::vector<VkCommandBuffer> _command_buffers;
 };
 
 }  // namespace kn

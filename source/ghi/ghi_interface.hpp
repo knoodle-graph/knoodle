@@ -36,6 +36,8 @@
 namespace kn {
 struct GHIDesc {
   uint8_t enable_validation_layers : 1;
+  uint8_t enable_sample_anisotropy : 1;
+  uint8_t use_shader_float_64 : 1;
 };
 
 class IGHI {
