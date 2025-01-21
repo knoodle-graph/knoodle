@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "core/os/os.hpp"
+#include "os/os.hpp"
 
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX

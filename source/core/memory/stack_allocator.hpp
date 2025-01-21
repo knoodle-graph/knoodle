@@ -33,11 +33,11 @@
 #include <cstddef>
 #include <memory>
 
-#include "core/common.hpp"
-#include "core/kn_assert.hpp"
+#include "common.hpp"
+#include "kn_assert.hpp"
 
 namespace kn {
-class KN_API StackAllocator {
+class KN_CORE_API StackAllocator {
  public:
   StackAllocator() = default;
   StackAllocator(const StackAllocator&) = delete;

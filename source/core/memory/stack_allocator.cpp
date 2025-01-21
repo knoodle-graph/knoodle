@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "core/memory/stack_allocator.hpp"
+#include "memory/stack_allocator.hpp"
 
 #include <cassert>
 #include <cstddef>

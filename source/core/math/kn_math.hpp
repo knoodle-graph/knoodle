@@ -29,7 +29,7 @@
 
 #pragma once
 
-#include "core/common.hpp"
+#include "common.hpp"
 
 namespace kn::math {
 

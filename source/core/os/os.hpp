@@ -30,7 +30,7 @@
 #pragma once
 
 #include <filesystem>
-#include "core/common.hpp"
+#include "common.hpp"
 
 namespace kn {
 class os {
@@ -90,8 +90,8 @@ class os {
   inline static bool free_library(void* library) { return free_library_impl(library); }
 
  private:
-  static KN_API Library* load_library_impl(const std::filesystem::path& path);
-  static KN_API bool free_library_impl(void* library);
-  static KN_API void* get_function_impl(void* library, const char* name);
+  static KN_CORE_API Library* load_library_impl(const std::filesystem::path& path);
+  static KN_CORE_API bool free_library_impl(void* library);
+  static KN_CORE_API void* get_function_impl(void* library, const char* name);
 };
 }  // namespace kn

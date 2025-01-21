@@ -27,6 +27,6 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "core/log/log.hpp"
+#include "log/log.hpp"
 
 namespace kn {}  // namespace kn

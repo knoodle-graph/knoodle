@@ -27,13 +27,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "core/config/config_manager.hpp"
+#include "config/config_manager.hpp"
 
 #include <algorithm>
 #include <array>
 #include <fstream>
 
-#include "core/string_utils.hpp"
+#include "string_utils.hpp"
 
 namespace kn {
 ConfigManager& ConfigManager::get_instance() {

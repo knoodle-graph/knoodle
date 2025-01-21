@@ -66,8 +66,16 @@ find_package(doctest)
 # Project Options                                         #
 ###########################################################
 
+option(BUILD_SHARED_LIBS "Build Shared Libraries" ON)
 option(KNOODLE_BUILD_EXAMPLES "Build the examples" ON)
 option(KNOODLE_BUILD_DOCS "Build the documentation" OFF)
+option(KNOODLE_BUILD_INSTALL "Build the installation" ON)
+
+set(LIB_TYPE STATIC)
+
+if(BUILD_SHARED_LIBS)
+    set(LIB_TYPE SHARED)
+endif()
 
 ###########################################################
 # Git Versioning                                          #
@@ -80,28 +88,12 @@ string(SUBSTRING "${GIT_SHA}" 0 8 GIT_SHORT_SHA)
 # Add target                                              #
 ###########################################################
 
+include(KnoodleModule)
+
 set(KNOODLE_MODULE_NAME "knoodle-engine")
 
 add_library(${KNOODLE_MODULE_NAME} SHARED)
-target_compile_features(${KNOODLE_MODULE_NAME} INTERFACE cxx_std_${CMAKE_CXX_STANDARD})
-target_compile_options(${KNOODLE_MODULE_NAME}
-  PRIVATE
-    $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX /wd4251 /wd4275>
-    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -pedantic -Werror>)
-
-include (GenerateExportHeader)
-generate_export_header(${KNOODLE_MODULE_NAME} EXPORT_MACRO_NAME KN_API EXPORT_FILE_NAME "source/knoodle_engine_api.h")
-
-include(CMakePackageConfigHelpers)
-write_basic_package_version_file(
-  "${CMAKE_BINARY_DIR}/${KNOODLE_MODULE_NAME}ConfigVersion.cmake"
-  VERSION ${PROJECT_VERSION}
-  COMPATIBILITY AnyNewerVersion)
-
-configure_package_config_file(
-  "${CMAKE_SOURCE_DIR}/cmake/${KNOODLE_MODULE_NAME}-config.cmake"
-  "${CMAKE_BINARY_DIR}/${KNOODLE_MODULE_NAME}-config.cmake"
-  INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${KNOODLE_MODULE_NAME}")
+knoodle_setup_module(TARGET ${KNOODLE_MODULE_NAME} API "KN_API")
 
 configure_file(
   "${CMAKE_SOURCE_DIR}/source/knoodle_version.hpp"
@@ -121,28 +113,13 @@ target_include_directories(${KNOODLE_MODULE_NAME}
 ###########################################################
 
 add_subdirectory(source)
-
-include(GNUInstallDirs)
-install(TARGETS ${KNOODLE_MODULE_NAME} "vulkan-ghi"
-      RUNTIME
-        COMPONENT Runtime
-        DESTINATION bin
-      LIBRARY
-        COMPONENT Runtime
-        DESTINATION lib
-        NAMELINK_COMPONENT Development
-      ARCHIVE
-        COMPONENT Development
-        DESTINATION lib/static
-      FILE_SET HEADERS
-        COMPONENT Development)
-
+target_link_libraries(${KNOODLE_MODULE_NAME} PUBLIC "core")
 
 install(DIRECTORY "${PROJECT_SOURCE_DIR}/source/" DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" FILES_MATCHING PATTERN "*.hpp")
 install(FILES
-  "${CMAKE_BINARY_DIR}/source/knoodle_version.hpp"
-  "${PROJECT_BINARY_DIR}/source/knoodle_engine_api.h"
-  DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
+    "${CMAKE_BINARY_DIR}/source/knoodle_version.hpp"
+    "${PROJECT_BINARY_DIR}/source/knoodle_engine_api.h"
+    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
 
 ###########################################################
 # Documentation                                           #

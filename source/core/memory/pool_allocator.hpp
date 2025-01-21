@@ -35,7 +35,7 @@
 
 namespace kn {
 template <typename T>
-class KN_API PoolAllocator {
+class KN_CORE_API PoolAllocator {
  public:
   PoolAllocator(const PoolAllocator&) = delete;
   PoolAllocator& operator=(const PoolAllocator&) = delete;

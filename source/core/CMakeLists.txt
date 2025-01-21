@@ -1,4 +1,9 @@
-target_sources("knoodle-engine"
+add_library(core ${LIB_TYPE})
+add_library(knoodle::core ALIAS core)
+
+knoodle_setup_module(TARGET core)
+
+target_sources(core
   PRIVATE    
     "${CMAKE_CURRENT_SOURCE_DIR}/config/config_manager.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/log/log.cpp"
@@ -22,12 +27,12 @@ target_sources("knoodle-engine"
     "os/os.hpp"
 )
 
-knoodle_add_tests(NAME "TestMathOperations" COMMAND "math_ops_test" FILE "${KNOODLE_ROOT_DIR}/tests/core/math/test_math_ops.cpp" DEPENDS "knoodle-engine")
-knoodle_add_tests(NAME "TestConfigSystem" COMMAND "config_test" FILE "${KNOODLE_ROOT_DIR}/tests/core/config/test_config.cpp" DEPENDS "knoodle-engine")
-knoodle_add_tests(NAME "TestStringUtils " COMMAND "string_utils_test" FILE "${KNOODLE_ROOT_DIR}/tests/core/test_string_utils.cpp" DEPENDS "knoodle-engine")
+knoodle_add_tests(NAME "TestMathOperations" COMMAND "math_ops_test" FILE "${KNOODLE_ROOT_DIR}/tests/core/math/test_math_ops.cpp" DEPENDS core)
+knoodle_add_tests(NAME "TestConfigSystem" COMMAND "config_test" FILE "${KNOODLE_ROOT_DIR}/tests/core/config/test_config.cpp" DEPENDS core)
+knoodle_add_tests(NAME "TestStringUtils " COMMAND "string_utils_test" FILE "${KNOODLE_ROOT_DIR}/tests/core/test_string_utils.cpp" DEPENDS core)
 
 if(BUILD_TESTING)
-  add_custom_command(TARGET "config_test" POST_BUILD
+  add_custom_command(TARGET core POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy_directory
       ${KNOODLE_ROOT_DIR}/tests/core/res
       ${CMAKE_CURRENT_BINARY_DIR}/res)

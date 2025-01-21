@@ -36,14 +36,14 @@
 #include <string_view>
 #include <unordered_map>
 
-#include "core/common.hpp"
+#include "common.hpp"
 
 namespace kn {
 /**
  * Manages the configuration of the application.
  * The configuration is read from a file and stored in memory.
  */
-class KN_API ConfigManager {
+class KN_CORE_API ConfigManager {
   ConfigManager() = default;
 
  public:

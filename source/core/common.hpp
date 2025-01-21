@@ -30,5 +30,3 @@
 #pragma once
 
 using real_t = float;
-
-#include "knoodle_engine_api.h"

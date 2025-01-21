@@ -36,7 +36,7 @@
 #include "core/kn_assert.hpp"
 
 namespace kn {
-class KN_API HeapAllocator {
+class KN_CORE_API HeapAllocator {
  public:
   HeapAllocator(const HeapAllocator&) = delete;
   HeapAllocator& operator=(const HeapAllocator&) = delete;
