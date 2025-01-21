@@ -39,14 +39,17 @@
 namespace kn {
 constexpr std::array<const char*, 1> validation_layers{"VK_LAYER_KHRONOS_validation"};
 
-std::vector<const char*> get_required_extensions(const GHIDesc* desc) {
+std::vector<const char*> get_required_extensions([[maybe_unused]] const GHIDesc* desc) {
   std::vector<const char*> extensions;
+#if KN_VULKAN_DEBUG
   if (desc->enable_validation_layers) {
     extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
   }
+#endif
   return extensions;
 }
 
+#if KN_VULKAN_DEBUG
 VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback([[maybe_unused]] VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                                               [[maybe_unused]] VkDebugUtilsMessageTypeFlagsEXT messageType,
                                               const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
@@ -56,6 +59,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback([[maybe_unused]] VkDebugUtilsMessa
   }
   return VK_FALSE;
 }
+#endif
 
 bool is_supported() {
   KN_LOG(LogVulkan, Info, "Checking Vulkan GHI support");
@@ -107,7 +111,40 @@ bool VulkanGHI::initialize(const GHIDesc* desc) {
   return true;
 }
 
-void VulkanGHI::shutdown() {}
+void VulkanGHI::shutdown() {
+  KN_LOG(LogVulkan, Info, "Shutting down Vulkan GHI");
+
+  if (_commandPool != VK_NULL_HANDLE) {
+    vkDestroyCommandPool(_device, _commandPool, nullptr);
+    _commandPool = VK_NULL_HANDLE;
+  }
+
+  if (_device != VK_NULL_HANDLE) {
+    vkDestroyDevice(_device, nullptr);
+    _device = VK_NULL_HANDLE;
+  }
+
+  if (_debugMessenger != VK_NULL_HANDLE) {
+    auto func =
+        (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(_instance, "vkDestroyDebugUtilsMessengerEXT");
+    if (func != nullptr) {
+      func(_instance, _debugMessenger, nullptr);
+    }
+    _debugMessenger = VK_NULL_HANDLE;
+  }
+
+  if (_instance != VK_NULL_HANDLE) {
+    vkDestroyInstance(_instance, nullptr);
+    _instance = VK_NULL_HANDLE;
+  }
+
+  _physicalDevice = VK_NULL_HANDLE;
+  _graphicsQueue = VK_NULL_HANDLE;
+  _computeQueue = VK_NULL_HANDLE;
+  _graphicsQueueFamilyIndex = -1;
+
+  KN_LOG(LogVulkan, Info, "Vulkan GHI shutdown complete");
+}
 
 bool VulkanGHI::create_instance(const GHIDesc* desc) {
   KN_LOG(LogVulkan, Info, "Creating Vulkan instance");
@@ -133,6 +170,7 @@ bool VulkanGHI::create_instance(const GHIDesc* desc) {
   create_info.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
   create_info.ppEnabledExtensionNames = extensions.data();
 
+#if KN_VULKAN_DEBUG
   VkDebugUtilsMessengerCreateInfoEXT debug_create_info{};
   if (desc->enable_validation_layers) {
     create_info.enabledLayerCount = static_cast<uint32_t>(validation_layers.size());
@@ -146,7 +184,9 @@ bool VulkanGHI::create_instance(const GHIDesc* desc) {
                                     VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
     debug_create_info.pfnUserCallback = debug_callback;
     create_info.pNext = &debug_create_info;
-  } else {
+  } else
+#endif
+  {
     create_info.enabledLayerCount = 0;
     create_info.ppEnabledLayerNames = nullptr;
   }
@@ -182,7 +222,8 @@ bool VulkanGHI::check_validation_layer_support() {
   return true;
 }
 
-bool VulkanGHI::setup_debug_messenger(const GHIDesc* desc) {
+bool VulkanGHI::setup_debug_messenger([[maybe_unused]] const GHIDesc* desc) {
+#if KN_VULKAN_DEBUG
   if (!desc->enable_validation_layers)
     return true;
 
@@ -202,6 +243,9 @@ bool VulkanGHI::setup_debug_messenger(const GHIDesc* desc) {
   }
 
   return false;
+#else
+  return true;
+#endif
 }
 
 bool VulkanGHI::setup_physical_device(const GHIDesc*) {
@@ -311,23 +355,6 @@ bool VulkanGHI::setup_command_pool(const GHIDesc*) {
     KN_LOG(LogVulkan, Error, "Failed to create command pool");
     return false;
   }
-  return true;
-}
-
-bool VulkanGHI::setup_command_buffer(const GHIDesc*) {
-  _command_buffers.resize(1);
-
-  VkCommandBufferAllocateInfo alloc_info{};
-  alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-  alloc_info.commandPool = _commandPool;
-  alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-  alloc_info.commandBufferCount = static_cast<uint32_t>(_command_buffers.size());
-
-  if (vkAllocateCommandBuffers(_device, &alloc_info, _command_buffers.data()) != VK_SUCCESS) {
-    KN_LOG(LogVulkan, Error, "Failed to allocate command buffers");
-    return false;
-  }
-
   return true;
 }
 

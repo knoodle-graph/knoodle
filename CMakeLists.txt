@@ -26,6 +26,11 @@ project(
   LANGUAGES CXX C)
 
 enable_testing()
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+if(NOT DEFINED CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "Debug")
+endif()
 
 ###########################################################
 # Redirect outputs                                        #

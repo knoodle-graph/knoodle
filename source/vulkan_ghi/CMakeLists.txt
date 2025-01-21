@@ -29,3 +29,5 @@ target_compile_options("vulkan-ghi"
   PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX /wd4251 /wd4275>
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -pedantic -Werror>)
+
+option(KN_VULKAN_DEBUG "Enable Vulkan debug" OFF)

@@ -37,6 +37,10 @@
 
 #include <vulkan/vulkan.h>
 
+#ifndef KN_VULKAN_DEBUG
+#define KN_VULKAN_DEBUG 0
+#endif
+
 namespace kn {
 
 /**
@@ -61,7 +65,6 @@ class VulkanGHI : public IGHI {
   bool setup_physical_device(const GHIDesc* desc);
   bool setup_logical_device(const GHIDesc* desc);
   bool setup_command_pool(const GHIDesc* desc);
-  bool setup_command_buffer(const GHIDesc* desc);
 
  private:
   VkInstance _instance{VK_NULL_HANDLE};
@@ -75,7 +78,6 @@ class VulkanGHI : public IGHI {
 
   int32_t _graphicsQueueFamilyIndex;
   VkCommandPool _commandPool{VK_NULL_HANDLE};
-  std::vector<VkCommandBuffer> _command_buffers;
 };
 
 }  // namespace kn
