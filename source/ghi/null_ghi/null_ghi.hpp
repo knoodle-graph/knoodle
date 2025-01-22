@@ -29,7 +29,7 @@
 
 #pragma once
 
-#include "ghi/ghi_interface.hpp"
+#include "ghi_interface.hpp"
 
 namespace kn {
 class NullGHI : public IGHI {

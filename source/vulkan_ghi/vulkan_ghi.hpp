@@ -30,12 +30,10 @@
 
 #pragma once
 
-#include <vector>
-
-#include "ghi_interface.hpp"
-#include "vulkan_ghi_api.hpp"
-
 #include <vulkan/vulkan.h>
+#include <vector>
+#include "ghi_interface.hpp"
+#include "vulkan-ghi_api.hpp"
 
 #ifndef KN_VULKAN_DEBUG
 #define KN_VULKAN_DEBUG 0

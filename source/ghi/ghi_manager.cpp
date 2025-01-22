@@ -27,15 +27,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "ghi/ghi_manager.hpp"
-#include "core/config/config_manager.hpp"
-#include "core/log/log.hpp"
+#include "ghi_manager.hpp"
+#include <algorithm>
+#include <array>
+#include "config/config_manager.hpp"
+#include "log/log.hpp"
 #include "string_utils.hpp"
 
-#include <array>
-
 #if KN_BUILD_NULL_GHI
-#include "ghi/null_ghi/null_ghi.hpp"
+#include "null_ghi/null_ghi.hpp"
 #endif
 
 namespace kn {

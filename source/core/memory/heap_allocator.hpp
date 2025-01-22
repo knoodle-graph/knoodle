@@ -32,8 +32,8 @@
 #include <stdlib.h>
 #include <memory>
 #include <new>
-
-#include "core/kn_assert.hpp"
+#include "core_api.hpp"
+#include "kn_assert.hpp"
 
 namespace kn {
 class KN_CORE_API HeapAllocator {

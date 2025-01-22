@@ -31,6 +31,7 @@
 
 #include <filesystem>
 #include "common.hpp"
+#include "core_api.hpp"
 
 namespace kn {
 class os {

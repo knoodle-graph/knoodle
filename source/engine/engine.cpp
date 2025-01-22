@@ -27,12 +27,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "knoodle/knoodle.hpp"
-
-#include "ghi/ghi_manager.hpp"
+#include "engine.hpp"
+#include "ghi_manager.hpp"
 
 namespace kn {
-bool knoodle_init() {
+bool engine_init() {
   IGHI* _ghi = GHIManager::get_instance().create_ghi("Vulkan");
   if (!_ghi)
     return false;
@@ -46,7 +45,7 @@ bool knoodle_init() {
   return true;
 }
 
-void knoodle_shutdown() {
+void engine_shutdown() {
   if (IGHI* _ghi = GHIManager::get_instance().get_ghi())
     _ghi->shutdown();
 }

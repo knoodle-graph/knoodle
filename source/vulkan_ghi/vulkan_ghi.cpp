@@ -27,14 +27,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "vulkan_ghi/vulkan_ghi.hpp"
-#include "ghi/ghi_manager.hpp"
-#include "log/log.hpp"
-#include "os/os.hpp"
-
+#include "vulkan_ghi.hpp"
 #include <array>
 #include <cassert>
+#include <cstring>
 #include <set>
+#include "ghi_manager.hpp"
+#include "log/log.hpp"
+#include "os/os.hpp"
 
 namespace kn {
 constexpr std::array<const char*, 1> validation_layers{"VK_LAYER_KHRONOS_validation"};

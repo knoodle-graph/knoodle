@@ -30,8 +30,7 @@
 #pragma once
 
 #include <cstdint>
-
-#include "ghi/ghi_definitions.hpp"
+#include "ghi_definitions.hpp"
 
 namespace kn {
 struct GHIDesc {

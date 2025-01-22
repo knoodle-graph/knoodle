@@ -30,12 +30,11 @@
 #pragma once
 
 #include <vector>
-
-#include "core/memory/heap_allocator.hpp"
+#include "memory/heap_allocator.hpp"
 
 namespace kn {
 template <typename T>
-class KN_CORE_API PoolAllocator {
+class PoolAllocator {
  public:
   PoolAllocator(const PoolAllocator&) = delete;
   PoolAllocator& operator=(const PoolAllocator&) = delete;

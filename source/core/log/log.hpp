@@ -29,6 +29,8 @@
 
 #pragma once
 
+#include "core_api.hpp"
+
 namespace kn {
 class Log {};
 }  // namespace kn

@@ -31,9 +31,9 @@
 
 #include <memory>
 #include <string_view>
-
-#include "core/os/os.hpp"
-#include "ghi/ghi_interface.hpp"
+#include "ghi_api.hpp"
+#include "ghi_interface.hpp"
+#include "os/os.hpp"
 
 namespace kn {
 
@@ -49,7 +49,7 @@ class GHIManager {
 
   ~GHIManager() = default;
 
-  KN_API IGHI* create_ghi(const std::string_view& hint = "");
+  KN_GHI_API IGHI* create_ghi(const std::string_view& hint = "");
 
   inline IGHI* get_ghi() const { return _ghi.get(); }
 
@@ -57,7 +57,7 @@ class GHIManager {
    * Get the GHI manager instance.
    * @return The GHI manager instance.
    */
-  KN_API static GHIManager& get_instance();
+  KN_GHI_API static GHIManager& get_instance();
 
  private:
   std::unique_ptr<IGHI> _ghi;

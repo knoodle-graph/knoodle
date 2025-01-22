@@ -27,13 +27,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "os/os.hpp"
-
 #include <dlfcn.h>
+#include <cstring>
+#include "os/os.hpp"
 
 namespace kn {
 os::Library* os::load_library_impl(const std::filesystem::path& path) {
-  return new Library(::dlopen(path.c_str(), RTLD_LAZY), path);
+  std::string path_str = "lib" + path.string() + ".so";
+  return new Library(::dlopen(path_str.c_str(), RTLD_LAZY), path_str);
 }
 
 bool os::free_library_impl(void* library) {

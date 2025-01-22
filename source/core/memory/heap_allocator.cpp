@@ -27,8 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "core/memory/heap_allocator.hpp"
-
+#include "memory/heap_allocator.hpp"
 #include <memory>
 
 namespace kn {

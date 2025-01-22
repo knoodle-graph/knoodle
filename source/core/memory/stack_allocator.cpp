@@ -28,7 +28,6 @@
 /**************************************************************************/
 
 #include "memory/stack_allocator.hpp"
-
 #include <cassert>
 #include <cstddef>
 #include <cstdlib>

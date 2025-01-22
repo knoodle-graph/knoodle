@@ -32,8 +32,8 @@
 #include <stdlib.h>
 #include <cstddef>
 #include <memory>
-
 #include "common.hpp"
+#include "core_api.hpp"
 #include "kn_assert.hpp"
 
 namespace kn {

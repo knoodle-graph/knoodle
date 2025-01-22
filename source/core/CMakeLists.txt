@@ -7,7 +7,7 @@ target_sources(core
   PRIVATE    
     "${CMAKE_CURRENT_SOURCE_DIR}/config/config_manager.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/log/log.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/memory/stack_allocator.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/memory/heap_allocator.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/memory/stack_allocator.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/$<$<PLATFORM_ID:Windows>:os/os_windows.cpp>"
     "${CMAKE_CURRENT_SOURCE_DIR}/$<$<PLATFORM_ID:Linux>:os/os_linux.cpp>"

@@ -35,8 +35,8 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
-
 #include "common.hpp"
+#include "core_api.hpp"
 
 namespace kn {
 /**

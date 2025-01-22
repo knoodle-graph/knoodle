@@ -27,7 +27,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "ghi/null_ghi/null_ghi.hpp"
+#include "null_ghi/null_ghi.hpp"
 
 namespace kn {
 bool NullGHI::initialize(const GHIDesc*) {

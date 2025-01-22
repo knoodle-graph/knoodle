@@ -29,17 +29,17 @@
 
 #pragma once
 
-#include "common.hpp"
+#include "engine_api.hpp"
 
 namespace kn {
 /**
  * @brief Initialize the Knoodle engine and its modules.
  */
-extern "C" KN_API bool knoodle_init();
+extern "C" KN_ENGINE_API bool engine_init();
 
 /**
  * @brief Shutdown the Knoodle engine and its modules.
  */
-extern "C" KN_API void knoodle_shutdown();
+extern "C" KN_ENGINE_API void engine_shutdown();
 
 }  // namespace kn

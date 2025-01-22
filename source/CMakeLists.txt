@@ -3,4 +3,4 @@
 add_subdirectory(core)
 add_subdirectory(ghi)
 add_subdirectory(vulkan_ghi)
-add_subdirectory(knoodle)
+add_subdirectory(engine)

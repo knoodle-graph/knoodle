@@ -30,10 +30,10 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest/doctest.h>
 
-#include "knoodle/knoodle.hpp"
+#include "engine.hpp"
 
 TEST_CASE("KnoodleEngine") {
   SUBCASE("init") {
-    CHECK(kn::knoodle_init());
+    CHECK(kn::engine_init());
   }
 }

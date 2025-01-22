@@ -1,11 +1,17 @@
-target_sources("knoodle-engine"
+add_library(ghi ${LIB_TYPE})
+add_library(knoodle::ghi ALIAS ghi)
+
+knoodle_setup_module(
+  TARGET ghi
+  PUBLIC_DEPENDS core)
+
+target_sources(ghi
   PRIVATE
-    "${CMAKE_CURRENT_SOURCE_DIR}/ghi_manager.cpp"
-    "${CMAKE_CURRENT_SOURCE_DIR}/null_ghi/null_ghi.cpp"
+    "ghi_manager.cpp"
+    "null_ghi/null_ghi.cpp"
     
   PUBLIC
   FILE_SET HEADERS
-  BASE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}"
   FILES
     "ghi_definitions.hpp"
     "ghi_interface.hpp"
@@ -16,7 +22,7 @@ target_sources("knoodle-engine"
 option(KNOODLE_BUILD_NULL_GHI "Build the null GHI implementation" ON)
 
 if(KNOODLE_BUILD_NULL_GHI)
-  target_compile_definitions("knoodle-engine" PRIVATE KN_BUILD_NULL_GHI=1)
+  target_compile_definitions(ghi PRIVATE KN_BUILD_NULL_GHI=1)
 endif()
 
-knoodle_add_tests(NAME "TestGHIManager" COMMAND "test_ghi_manager" FILE "${KNOODLE_ROOT_DIR}/tests/ghi/test_ghi_manager.cpp" DEPENDS "knoodle-engine")
+knoodle_add_tests(NAME "TestGHIManager" COMMAND "test_ghi_manager" FILE "${KNOODLE_ROOT_DIR}/tests/ghi/test_ghi_manager.cpp" DEPENDS ghi)
