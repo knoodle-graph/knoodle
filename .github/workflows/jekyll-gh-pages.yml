@@ -28,13 +28,34 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: >-
+          sudo apt update -y &&
+          sudo apt install -y
+          cmake
+          clang
+          ninja-build
+          doxygen
+
+      - name: Configure CMake
+        run: cmake -B build -S . -G Ninja -DCMAKE_CXX_COMPILER=clang++ -DKNOODLE_BUILD_DOCS=ON -DBUILD_TESTING=OFF
+
+      - name: Build documentations
+        run: cmake --build build --target docs
+
+      - name: Copy doxygen files
+        run: cp -r build/docs docs/doxygen
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
+
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
           source: ./docs
           destination: ./_site
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
 
