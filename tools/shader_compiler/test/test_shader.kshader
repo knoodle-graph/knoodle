@@ -1,0 +1,35 @@
+---
+target: ps_5_0
+permutations:
+  - name: COLOR_RED
+    entry: main
+    possibilities: [0, 1]
+    defines:
+      - COLOR_RED
+
+  - name: COLOR_GREEN
+    entry: main
+    possibilities: [0, 1]
+    defines:
+      - COLOR_GREEN
+
+  - name: COLOR_BLUE
+    entry: main
+    possibilities: [0, 1]
+    defines:
+      - COLOR_BLUE
+...
+
+#define COLOR_RED 0
+#define COLOR_GREEN 0
+#define COLOR_BLUE 0
+
+// Pixel Shader
+struct PSInput {
+    float4 position : SV_POSITION;
+    float4 color : COLOR;
+};
+
+float4 main(PSInput input) : SV_TARGET {
+    return float4(COLOR_RED, COLOR_GREEN, COLOR_BLUE, 1.0f);
+}

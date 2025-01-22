@@ -28,6 +28,7 @@
 /**************************************************************************/
 
 #include "vulkan_ghi.hpp"
+#include <vulkan/vk_enum_string_helper.h>
 #include <array>
 #include <cassert>
 #include <cstring>
@@ -192,7 +193,7 @@ bool VulkanGHI::create_instance(const GHIDesc* desc) {
   }
 
   if (VkResult result = vkCreateInstance(&create_info, nullptr, &_instance); result != VK_SUCCESS) {
-    KN_LOG(LogVulkan, Error, "Failed to create Vulkan instance. Error: {}", result);
+    KN_LOG(LogVulkan, Error, "Failed to create Vulkan instance. Error: {}", string_VkResult(result));
     return false;
   }
 
@@ -263,6 +264,7 @@ bool VulkanGHI::setup_physical_device(const GHIDesc*) {
   for (const auto& device : devices) {
     VkPhysicalDeviceProperties device_properties;
     vkGetPhysicalDeviceProperties(device, &device_properties);
+    KN_LOG(LogVulkan, Info, "Found a suitable GPU. Device: {}", device_properties.deviceName);
     if (device_properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
       _physicalDevice = device;
       break;
@@ -273,8 +275,6 @@ bool VulkanGHI::setup_physical_device(const GHIDesc*) {
     KN_LOG(LogVulkan, Error, "Failed to find a suitable GPU");
     return false;
   }
-
-  KN_LOG(LogVulkan, Info, "Found a suitable GPU. Device: {}", device_properties.deviceName);
 
   return true;
 }

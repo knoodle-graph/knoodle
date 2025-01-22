@@ -31,14 +31,16 @@
 
 #include <dxc/dxcapi.h>
 #include <wrl.h>
-#include <cerrno>
 #include <cstdint>
+#include <filesystem>
 #include <iostream>
+#include <set>
+#include "log/log.hpp"
 
 using namespace Microsoft::WRL;
 
 namespace kn {
-bool compile() {
+bool compile(const std::filesystem::path& InputFile, const std::set<std::string>& CompileArgs) {
   ComPtr<IDxcUtils> pUtils;
   ComPtr<IDxcCompiler3> pCompiler;
 
@@ -48,15 +50,20 @@ bool compile() {
   ComPtr<IDxcIncludeHandler> pIncludeHandler;
   pUtils->CreateDefaultIncludeHandler(&pIncludeHandler);
 
-  LPCWSTR pszArgs[] = {L"D:/Dev/myshader.hlsl", L"-spirv", L"-E", L"main", L"-T", L"ps_6_0", L"-Fo",
-                       L"D:/Dev/myshader.spv"};
+  std::wstring Filename = InputFile.wstring();
+  std::wstring OutputFilename = std::filesystem::path(InputFile).replace_extension("spv").wstring();
+
+  LPCWSTR pszArgs[] = {Filename.c_str(), L"-spirv", L"-E", L"main", L"-T", L"ps_6_0", L"-Fo", OutputFilename.c_str()};
 
   ComPtr<IDxcBlobEncoding> pSource = nullptr;
-  pUtils->LoadFile(L"D:/Dev/myshader.hlsl", nullptr, &pSource);
+  pUtils->LoadFile(Filename.c_str(), nullptr, &pSource);
   DxcBuffer Source;
-  Source.Ptr = pSource->GetBufferPointer();
-  Source.Size = pSource->GetBufferSize();
-  Source.Encoding = DXC_CP_ACP;
+
+  if (pSource->GetBufferSize()) {
+    Source.Ptr = pSource->GetBufferPointer();
+    Source.Size = pSource->GetBufferSize();
+    Source.Encoding = DXC_CP_ACP;
+  }
 
   ComPtr<IDxcResult> pResults;
   pCompiler->Compile(&Source,                 // Source buffer.
@@ -70,14 +77,14 @@ bool compile() {
   pResults->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&pErrors), nullptr);
 
   if (pErrors != nullptr && pErrors->GetStringLength() != 0) {
-    std::cerr << pErrors->GetStringPointer() << std::endl;
+    KN_LOG(LogDxc, Error, "{}", pErrors->GetStringPointer());
     return false;
   }
 
   HRESULT hrStatus;
   pResults->GetStatus(&hrStatus);
   if (FAILED(hrStatus)) {
-    wprintf(L"Compilation Failed\n");
+    KN_LOG(LogDxc, Error, "Compilation Failed");
     return false;
   }
 

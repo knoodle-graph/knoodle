@@ -11,7 +11,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_VERBOSE_MAKEFILE ON)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -82,8 +81,8 @@ option(BUILD_SHARED_LIBS "Build Shared Libraries" ON)
 option(KNOODLE_BUILD_EXAMPLES "Build the examples" ON)
 option(KNOODLE_BUILD_DOCS "Build the documentation" OFF)
 option(KNOODLE_BUILD_INSTALL "Build the installation" ON)
-option(KNOODLE_BUILD_TOOLS "Build the tools" OFF)
-option(KNOODLE_WITH_VULKAN "Build with Vulkan support" OFF)
+option(KNOODLE_BUILD_TOOLS "Build the tools" ON)
+option(KNOODLE_WITH_VULKAN "Build with Vulkan support" ON)
 
 set(LIB_TYPE STATIC)
 

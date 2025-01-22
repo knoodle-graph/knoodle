@@ -27,15 +27,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include <chrono>
 #include <cstdint>
 #include <filesystem>
 #include <set>
 #include "log/log.hpp"
-#include "string_utils.hpp"
 
 namespace kn {
-extern bool compile();
-}
+extern bool compile(const std::filesystem::path& InputFile, const std::set<std::string>& CompileArgs);
+extern bool preProcessShader(const std::filesystem::path& InputFile, std::set<std::filesystem::path>& ProcessedFiles);
+}  // namespace kn
 
 using namespace kn;
 
@@ -56,6 +57,8 @@ int32_t main(int32_t argc, char** argv) {
   StdSink.ShowFile = false;
 #endif
 
+  KN_LOG(LogShaderCompiler, Debug, "Shader compiler started with {} arguments", argc - 1);
+
   constexpr auto noInputError = []() {
     KN_LOG(LogShaderCompiler, Error, "No input file provided");
     print_help();
@@ -73,12 +76,13 @@ int32_t main(int32_t argc, char** argv) {
     }
   }
 
+  std::set<std::string> CompileArgs;
   std::set<std::filesystem::path> InputFiles;
 
   for (int32_t i = 1; i < argc; ++i) {
     char* Arg = argv[i];
-#ifdef KN_WITH_LOG
     if (strcmp("--log", Arg) == 0) {
+#ifdef KN_WITH_LOG
       std::filesystem::path LogPath = "shader-compiler.log";
       if ((i + 1) < argc && argv[i + 1][0] != '-') {
         LogPath = argv[i + 1];
@@ -87,12 +91,17 @@ int32_t main(int32_t argc, char** argv) {
       auto& FileSink = Logger.addSink<Log::FileSink>(LogPath);
       StdSink.ShowFile = false;
       StdSink.ShowTimestamp = false;
-    }
+      KN_LOG(LogShaderCompiler, Debug, "Logging to file: {}", LogPath.string());
 #endif
+      continue;
+    }
 
-    if (std::filesystem::is_regular_file(Arg)) {
+    if (std::filesystem::exists(Arg) && std::filesystem::is_regular_file(Arg)) {
       KN_LOG(LogShaderCompiler, Verbose, "Adding input file: {}", Arg);
       InputFiles.insert(Arg);
+    } else {
+      KN_LOG(LogShaderCompiler, Verbose, "Adding compile argument: {}", Arg);
+      CompileArgs.insert(Arg);
     }
   }
 
@@ -100,6 +109,30 @@ int32_t main(int32_t argc, char** argv) {
     noInputError();
     return 1;
   }
+
+  auto StartTime = std::chrono::high_resolution_clock::now();
+
+  std::set<std::filesystem::path> ProcessedFiles;
+  for (const auto& InputFile : InputFiles) {
+    KN_LOG(LogShaderCompiler, Info, "Preprocessing shader: {}", InputFile.string());
+    if (!preProcessShader(InputFile, ProcessedFiles)) {
+      KN_LOG(LogShaderCompiler, Error, "Failed to preprocess shader: {}", InputFile.string());
+      return 1;
+    }
+  }
+
+  for (const auto& HlslFile : ProcessedFiles) {
+    KN_LOG(LogShaderCompiler, Info, "Compiling shader: {}", HlslFile.filename().string());
+    if (!compile(HlslFile, CompileArgs)) {
+      KN_LOG(LogShaderCompiler, Error, "Failed to compile shader: {}", HlslFile.filename().string());
+      return 1;
+    }
+  }
+
+  auto EndTime = std::chrono::high_resolution_clock::now();
+
+  KN_LOG(LogShaderCompiler, Info, "Preprocessed {} files and compiled {} in {}ms.", ProcessedFiles.size(),
+         ProcessedFiles.size(), std::chrono::duration_cast<std::chrono::milliseconds>(EndTime - StartTime).count());
 
   return 0;
 }
