@@ -1,7 +1,7 @@
 # Knoodle
 
 <div align="center">
-    <a href="https://knoagraph.org">
+    <a href="https://www.knoodlegraph.org">
         <img src="knoodle-splash.svg" alt="Knoodle Splash" width="80%" alt="Knoodle logo"/>
     </a>
 </div>
