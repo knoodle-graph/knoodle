@@ -46,7 +46,9 @@ jobs:
         run: cmake --build build --target docs
 
       - name: Copy doxygen files
-        run: cp -r build/docs/html ./public/html
+        run: |
+          mkdir -p public
+          cp -r build/docs/html/ ./public/html
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
