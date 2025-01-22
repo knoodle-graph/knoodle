@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.26)
+cmake_minimum_required(VERSION 3.25)
 
 ###########################################################
 # Global settings                                         #
@@ -74,6 +74,7 @@ option(BUILD_SHARED_LIBS "Build Shared Libraries" ON)
 option(KNOODLE_BUILD_EXAMPLES "Build the examples" ON)
 option(KNOODLE_BUILD_DOCS "Build the documentation" OFF)
 option(KNOODLE_BUILD_INSTALL "Build the installation" ON)
+option(KNOODLE_BUILD_TOOLS "Build the tools" ON)
 
 set(LIB_TYPE STATIC)
 
@@ -104,6 +105,10 @@ configure_file(
 ###########################################################
 
 add_subdirectory(source)
+
+if(KNOODLE_BUILD_TOOLS)
+  add_subdirectory(tools)
+endif()
 
 ###########################################################
 # Documentation                                           #
