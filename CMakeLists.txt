@@ -37,18 +37,26 @@ endif()
 # Redirect outputs                                        #
 ###########################################################
 
-get_property(GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
-if(GENERATOR_IS_MULTI_CONFIG)
-  set(ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/static/${CMAKE_BUILD_TYPE}/" CACHE INTERNAL "" FORCE)
-  set(LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/${CMAKE_BUILD_TYPE}/" CACHE INTERNAL "" FORCE)
-  set(RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/${CMAKE_BUILD_TYPE}/" CACHE INTERNAL "" FORCE)
-  set(TESTS_OUTPUT_DIR "${RUNTIME_OUTPUT_DIRECTORY}/tests/${CMAKE_BUILD_TYPE}/" CACHE INTERNAL "" FORCE)
-else()
-  set(ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/static/" CACHE INTERNAL "" FORCE)
-  set(LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/" CACHE INTERNAL "" FORCE)
-  set(RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/" CACHE INTERNAL "" FORCE)
-  set(TESTS_OUTPUT_DIR "${RUNTIME_OUTPUT_DIRECTORY}/tests/" CACHE INTERNAL "" FORCE)
-endif()
+set(BUILD_CONFIG_DIR
+  "$<$<NOT:$<PLATFORM_ID:Windows>>:${CMAKE_BUILD_TYPE}>")
+string(TOLOWER ${BUILD_CONFIG_DIR} BUILD_CONFIG_DIR)
+
+set(BUILD_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${BUILD_SUBDIR_NAME}")
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${BUILD_OUTPUT_DIR}lib")
+set(ARCHIVE_OUTPUT_DIRECTORY "${BUILD_OUTPUT_DIR}lib")
+
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${BUILD_OUTPUT_DIR}bin")
+set(LIBRARY_OUTPUT_DIRECTORY "${BUILD_OUTPUT_DIR}bin")
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${BUILD_OUTPUT_DIR}bin")
+set(RUNTIME_OUTPUT_DIRECTORY "${BUILD_OUTPUT_DIR}bin")
+
+message(STATUS "Generator: ${CMAKE_GENERATOR}")
+message(STATUS "Build output directory: ${BUILD_OUTPUT_DIR}")
+message(STATUS "Archive output directory: ${ARCHIVE_OUTPUT_DIRECTORY}")
+message(STATUS "Library output directory: ${LIBRARY_OUTPUT_DIRECTORY}")
+message(STATUS "Executable output directory: ${EXECUTABLE_OUTPUT_PATH}")
 
 ###########################################################
 # Global Options                                          #
@@ -74,7 +82,8 @@ option(BUILD_SHARED_LIBS "Build Shared Libraries" ON)
 option(KNOODLE_BUILD_EXAMPLES "Build the examples" ON)
 option(KNOODLE_BUILD_DOCS "Build the documentation" OFF)
 option(KNOODLE_BUILD_INSTALL "Build the installation" ON)
-option(KNOODLE_BUILD_TOOLS "Build the tools" ON)
+option(KNOODLE_BUILD_TOOLS "Build the tools" OFF)
+option(KNOODLE_WITH_VULKAN "Build with Vulkan support" OFF)
 
 set(LIB_TYPE STATIC)
 

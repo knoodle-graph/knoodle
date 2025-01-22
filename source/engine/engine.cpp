@@ -32,7 +32,7 @@
 
 namespace kn {
 bool engine_init() {
-  IGHI* _ghi = GHIManager::get_instance().create_ghi("Vulkan");
+  IGHI* _ghi = GHIManager::get_instance().create_ghi();
   if (!_ghi)
     return false;
 
