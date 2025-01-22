@@ -23,6 +23,8 @@ concurrency:
 jobs:
   build-docs:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -44,43 +46,13 @@ jobs:
         run: cmake --build build --target docs
 
       - name: Copy doxygen files
-        run: cp -r build/docs/html ./_site/
-
-      - name: Create .nojekyll
-        run: touch ./_site/.nojekyll
+        run: cp -r build/docs/html ./public
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4
         if: github.ref == 'refs/heads/main'
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ${{ github.workspace }}/_site
-
-  build-page:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Build with Jekyll
-        uses: actions/jekyll-build-pages@v1
-        with:
-          source: "./docs/pages"
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-
-  # Deployment job
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build-page
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          publish_dir: ./public
+          enable_jekyll: true
+          cname: www.knoodlegraph.org
