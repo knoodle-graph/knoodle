@@ -27,26 +27,56 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include <yaml-cpp/yaml.h>
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
 #include <set>
 #include <sstream>
 #include "log/log.hpp"
+#include "shader_compiler_structures.hpp"
 #include "string_utils.hpp"
 
 namespace kn {
-bool preProcessShader(const std::filesystem::path& InputFile, std::set<std::filesystem::path>& ProcessedFiles) {
-  KN_LOG(LogShaderCompiler, Info, "Starting preprocessing for shader: {}", InputFile.string());
+bool processYmlFile(const std::filesystem::path& filename, ShaderConfig& shaderConfig) {
+  try {
+    YAML::Node Config = YAML::LoadFile(filename.string());
+    if (Config.IsNull()) {
+      KN_LOG(LogShaderCompiler, Error, "Invalid YAML file: {}", filename.filename().string());
+      return false;
+    }
 
-  if (!std::filesystem::exists(InputFile) || !std::filesystem::is_regular_file(InputFile)) {
-    KN_LOG(LogShaderCompiler, Error, "Invalid input file: {}", InputFile.string());
+    shaderConfig = Config.as<ShaderConfig>();
+    KN_LOG(LogShaderCompiler, Info, "Processed YAML file: {}", filename.string());
+
+  } catch (const std::exception& e) {
+    KN_LOG(LogShaderCompiler, Error, "Failed to process yml file: {} -- Exception caught: {}", filename.string(),
+           e.what());
     return false;
   }
 
-  std::ifstream File(InputFile);
+  return true;
+}
+
+bool setupPermutations(const ShaderConfig& shaderConfig, std::set<std::filesystem::path>& processedFiles) {
+  for (const auto& permutation : shaderConfig.Permutations) {
+	  const std::filesystem::path outputDir = *processedFiles.begin();
+  }
+
+  return true;
+}
+
+bool preProcessShader(const std::filesystem::path& inputFile, std::set<std::filesystem::path>& processedFiles) {
+  KN_LOG(LogShaderCompiler, Info, "Starting preprocessing for shader: {}", inputFile.string());
+
+  if (!std::filesystem::exists(inputFile) || !std::filesystem::is_regular_file(inputFile)) {
+    KN_LOG(LogShaderCompiler, Error, "Invalid input file: {}", inputFile.string());
+    return false;
+  }
+
+  std::ifstream File(inputFile);
   if (!File.is_open() || !File.good()) {
-    KN_LOG(LogShaderCompiler, Error, "Failed to open file: {}", InputFile.string());
+    KN_LOG(LogShaderCompiler, Error, "Failed to open file: {}", inputFile.string());
     return false;
   }
 
@@ -60,7 +90,7 @@ bool preProcessShader(const std::filesystem::path& InputFile, std::set<std::file
     KN_LOG(LogShaderCompiler, Info, "Created directory: {}", OutputDir.string());
   }
 
-  std::filesystem::path YmlFile = InputFile;
+  std::filesystem::path YmlFile = inputFile;
   const bool HasYamlFile = std::filesystem::exists(YmlFile.replace_extension("yaml")) ||
                            std::filesystem::exists(YmlFile.replace_extension("yml"));
 
@@ -107,10 +137,10 @@ bool preProcessShader(const std::filesystem::path& InputFile, std::set<std::file
         }
 
         if (IsInsideYml) {
-          KN_LOG(LogShaderCompiler, Error, "YAML block not closed at {}:{}", InputFile.string(), LineNumber);
+          KN_LOG(LogShaderCompiler, Error, "YAML block not closed at {}:{}", inputFile.string(), LineNumber);
           return false;
         }
-        KN_LOG(LogShaderCompiler, Info, "Processed YAML block in file: {}", InputFile.string());
+        KN_LOG(LogShaderCompiler, Info, "Processed YAML block in file: {}", inputFile.string());
       } else {  // Enter HLSL code block
         HlslContent << Line << std::endl;
       }
@@ -129,7 +159,7 @@ bool preProcessShader(const std::filesystem::path& InputFile, std::set<std::file
     }
 
     if (!HlslContent.str().empty()) {
-      std::filesystem::path HlslFile = OutputDir / InputFile.filename().replace_extension("hlsl");
+      std::filesystem::path HlslFile = OutputDir / inputFile.filename().replace_extension("hlsl");
       std::ofstream Hlsl(HlslFile);
       if (!Hlsl.is_open() || !Hlsl.good()) {
         KN_LOG(LogShaderCompiler, Error, "Failed to open file: {}", HlslFile.string());
@@ -140,14 +170,24 @@ bool preProcessShader(const std::filesystem::path& InputFile, std::set<std::file
       Hlsl.close();
       KN_LOG(LogShaderCompiler, Info, "Written HLSL content to file: {}", HlslFile.string());
 
-      ProcessedFiles.insert(HlslFile);
+      processedFiles.clear();
+      processedFiles.emplace(std::move(HlslFile));
     }
   } catch (const std::exception& e) {
     KN_LOG(LogShaderCompiler, Error, "Exception caught: {}", e.what());
     return false;
   }
 
-  KN_LOG(LogShaderCompiler, Info, "Preprocessing completed for shader: {}", InputFile.string());
+  ShaderConfig ShaderConfig;
+  if (!processYmlFile(OutputDir / YmlFile.filename(), ShaderConfig)) {
+    return false;
+  }
+
+  if (!setupPermutations(ShaderConfig, processedFiles)) {
+    return false;
+  }
+
+  KN_LOG(LogShaderCompiler, Info, "Preprocessing completed for shader: {}", inputFile.string());
   return true;
 }
 }  // namespace kn

@@ -109,6 +109,13 @@ configure_file(
   ESCAPE_QUOTES)
 
 ###########################################################
+# Add extern subdirectories                               #
+###########################################################
+
+set(YAML_BUILD_SHARED_LIBS OFF)
+add_subdirectory(third_party/yaml-cpp)
+
+###########################################################
 # Add intern subdirectories                               #
 ###########################################################
 

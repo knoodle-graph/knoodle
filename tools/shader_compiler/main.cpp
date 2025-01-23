@@ -35,7 +35,7 @@
 
 namespace kn {
 extern bool compile(const std::filesystem::path& InputFile, const std::set<std::string>& CompileArgs);
-extern bool preProcessShader(const std::filesystem::path& InputFile, std::set<std::filesystem::path>& ProcessedFiles);
+extern bool preProcessShader(const std::filesystem::path& inputFile, std::set<std::filesystem::path>& processedFiles);
 }  // namespace kn
 
 using namespace kn;
@@ -131,8 +131,8 @@ int32_t main(int32_t argc, char** argv) {
 
   auto EndTime = std::chrono::high_resolution_clock::now();
 
-  KN_LOG(LogShaderCompiler, Info, "Preprocessed {} files and compiled {} in {}ms.", ProcessedFiles.size(),
-         ProcessedFiles.size(), std::chrono::duration_cast<std::chrono::milliseconds>(EndTime - StartTime).count());
+  KN_LOG(LogShaderCompiler, Info, "Preprocessed and compiled in {}ms.",
+         std::chrono::duration_cast<std::chrono::milliseconds>(EndTime - StartTime).count());
 
   return 0;
 }

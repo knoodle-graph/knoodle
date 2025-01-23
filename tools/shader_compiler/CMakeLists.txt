@@ -3,6 +3,7 @@ find_package(Vulkan REQUIRED COMPONENTS SPIRV-Tools OPTIONAL_COMPONENTS dxc Molt
 add_executable(shader_compiler
     "main.cpp"
     "shader_compiler_utils.cpp"
+    "shader_compiler_structures.hpp"
     $<$<BOOL:${Vulkan_dxc_exe_FOUND}>:dxc_compiler.cpp>
     $<$<BOOL:${Vulkan_MoltenVK_FOUND}>:molten_compiler.cpp>
 )

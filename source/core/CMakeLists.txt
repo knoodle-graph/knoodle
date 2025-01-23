@@ -1,7 +1,9 @@
 add_library(core ${LIB_TYPE})
 add_library(knoodle::core ALIAS core)
 
-knoodle_setup_module(TARGET core)
+knoodle_setup_module(
+  TARGET core
+  PUBLIC_DEPENDS yaml-cpp::yaml-cpp)
 
 target_sources(core
   PRIVATE    
