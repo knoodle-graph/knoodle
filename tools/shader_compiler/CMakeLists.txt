@@ -1,5 +1,7 @@
 find_package(Vulkan REQUIRED COMPONENTS SPIRV-Tools OPTIONAL_COMPONENTS dxc MoltenVK)
 
+set(ENABLE_SPIRV_CODEGEN CACHE BOOL "Enable SPIRV codegen" ON)
+
 add_executable(shader_compiler
     "main.cpp"
     "shader_compiler_utils.cpp"

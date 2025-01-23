@@ -66,9 +66,12 @@ bool compile(const ShaderCompileHeader& shaderHeader) {
   std::wstring OutputFilename = std::filesystem::path(shaderHeader.Output).replace_extension("spv").wstring();
 
   std::vector<LPCWSTR> Args = {
-      Filename.c_str(),
-      L"-spirv",
-  };
+      Filename.c_str(), L"-spirv", L"-fvk-use-dx-layout", L"-fspv-reflect", L"-fspv-target-env=vulkan1.1", L"-O3"};
+
+  if (shaderHeader.Target.starts_with("vs")) {
+    Args.push_back(L"-fvk-use-dx-position-w");
+    Args.push_back(L"-fvk-invert-y");
+  }
 
   std::wstring WideEntry;
   if (!shaderHeader.Entry.empty()) {
@@ -120,7 +123,6 @@ bool compile(const ShaderCompileHeader& shaderHeader) {
 
   if (pErrors != nullptr && pErrors->GetStringLength() != 0) {
     KN_LOG(LogDxc, Error, "{}", pErrors->GetStringPointer());
-    return false;
   }
 
   HRESULT hrStatus;
@@ -138,6 +140,22 @@ bool compile(const ShaderCompileHeader& shaderHeader) {
     _wfopen_s(&fp, pShaderName->GetStringPointer(), L"wb");
     if (fp) {
       fwrite(pShader->GetBufferPointer(), pShader->GetBufferSize(), 1, fp);
+      fclose(fp);
+    }
+  }
+
+  ComPtr<IDxcBlob> pReflectionData;
+  pResults->GetOutput(DXC_OUT_REFLECTION, IID_PPV_ARGS(&pReflectionData), nullptr);
+  if (pReflectionData != nullptr) {
+    DxcBuffer ReflectionData;
+    ReflectionData.Encoding = DXC_CP_ACP;
+    ReflectionData.Ptr = pReflectionData->GetBufferPointer();
+    ReflectionData.Size = pReflectionData->GetBufferSize();
+
+    FILE* fp = NULL;
+    _wfopen_s(&fp, pShaderName->GetStringPointer(), L"wb");
+    if (fp) {
+      fwrite(pReflectionData->GetBufferPointer(), pReflectionData->GetBufferSize(), 1, fp);
       fclose(fp);
     }
   }

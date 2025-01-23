@@ -49,22 +49,26 @@ bool processYmlFile(const std::filesystem::path& filename, ShaderConfig& shaderC
 
     shaderConfig = Config.as<ShaderConfig>();
 
-    int32_t PermutationsCount = static_cast<int32_t>(shaderConfig.Permutations.size());
-    if (PermutationsCount == 0) {
-      KN_LOG(LogShaderCompiler, Debug, "No permutations found in shader file: {}", filename.string());
-      return true;
+    for (const auto& entry : shaderConfig.Entries) {
+      int32_t PermutationsCount = static_cast<int32_t>(entry.Permutations.size());
+      if (PermutationsCount == 0) {
+        KN_LOG(LogShaderCompiler, Debug, "No permutations found in shader file: {}", filename.string());
+        return true;
+      }
+
+      real_t PossibilitiesCount = 0.0;
+      for (const auto& permutation : entry.Permutations) {
+        PossibilitiesCount += static_cast<real_t>(permutation.Possibilities.size());
+      }
+      real_t AveragePossibilities = PossibilitiesCount / static_cast<real_t>(PermutationsCount);
+
+      PermutationsCount = static_cast<int32_t>(std::round(std::pow(AveragePossibilities, PermutationsCount)));
+
+      KN_LOG(LogShaderCompiler, Info, "Processed shader file: {} -- Found {} permutations", filename.string(),
+             PermutationsCount);
     }
 
-    real_t PossibilitiesCount = 0.0;
-    for (const auto& permutation : shaderConfig.Permutations) {
-      PossibilitiesCount += static_cast<real_t>(permutation.Possibilities.size());
-    }
-    real_t AveragePossibilities = PossibilitiesCount / static_cast<real_t>(PermutationsCount);
-
-    PermutationsCount = static_cast<int32_t>(std::round(std::pow(AveragePossibilities, PermutationsCount)));
-
-    KN_LOG(LogShaderCompiler, Info, "Processed shader file: {} -- Found {} permutations", filename.string(),
-           PermutationsCount);
+    KN_LOG(LogShaderCompiler, Info, "Found {} entries", shaderConfig.Entries.size());
 
   } catch (const std::exception& e) {
     KN_LOG(LogShaderCompiler, Error, "Failed to process yml file: {} -- Exception caught: {}", filename.string(),
@@ -75,10 +79,10 @@ bool processYmlFile(const std::filesystem::path& filename, ShaderConfig& shaderC
   return true;
 }
 
-std::vector<std::vector<std::string>> setupPermutations(const ShaderConfig& shaderConfig) {
+std::vector<std::vector<std::string>> setupPermutations(const ShaderEntry& entry) {
   std::vector<std::vector<std::string>> possibilities;
 
-  for (const auto& permutation : shaderConfig.Permutations) {
+  for (const auto& permutation : entry.Permutations) {
     possibilities.emplace_back(permutation.Possibilities);
   }
 
@@ -242,16 +246,20 @@ bool preProcessShader(const std::filesystem::path& inputFile, std::vector<Shader
     return false;
   }
 
-  std::vector<std::vector<std::string>> Combos = setupPermutations(ShaderConfig);
-  for (const auto& combo : Combos) {
-    std::vector<std::string> ShaderArgs = setupCompileArgsForCombo(ShaderConfig.Permutations, combo);
-
-    std::filesystem::path ShaderFilename = inputFile.filename().replace_extension("");
-
+  for (const auto& entry : ShaderConfig.Entries) {
     std::stringstream OutputName;
+    std::filesystem::path ShaderFilename = inputFile.filename().replace_extension("");
     OutputName << ShaderFilename.string();
-    for (size_t i = 0; i < combo.size(); ++i) {
-      OutputName << "_" + ShaderConfig.Permutations[i].Name + combo[i];
+    OutputName << '_' << entry.Entry;
+
+    std::vector<std::vector<std::string>> Combos = setupPermutations(entry);
+    std::vector<std::string> ShaderArgs;
+    for (const auto& combo : Combos) {
+      ShaderArgs = setupCompileArgsForCombo(entry.Permutations, combo);
+
+      for (size_t i = 0; i < combo.size(); ++i) {
+        OutputName << "_" + entry.Permutations[i].Name + combo[i];
+      }
     }
 
     size_t HashCode = std::hash<std::string>{}(OutputName.str());
@@ -267,8 +275,8 @@ bool preProcessShader(const std::filesystem::path& inputFile, std::vector<Shader
         .Name = PermutationName,
         .Input = HlslFile,
         .Output = OutputDir / OutputFile,
-        .Entry = ShaderConfig.Entry,
-        .Target = ShaderConfig.Target,
+        .Entry = entry.Entry,
+        .Target = entry.Target,
         .Args = std::move(ShaderArgs),
     });
   }

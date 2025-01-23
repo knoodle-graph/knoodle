@@ -48,10 +48,14 @@ struct ShaderPermutationConfig {
   std::vector<std::string> Defines;
 };
 
-struct ShaderConfig {
+struct ShaderEntry {
   std::string Entry;
   std::string Target;
   std::vector<ShaderPermutationConfig> Permutations;
+};
+
+struct ShaderConfig {
+  std::vector<ShaderEntry> Entries;
 };
 }  // namespace kn
 
@@ -67,7 +71,7 @@ struct convert<kn::ShaderPermutationConfig> {
   }
 
   static bool decode(const Node& node, kn::ShaderPermutationConfig& rhs) {
-    if (!node.IsMap() || node.size() != 3) {
+    if (!node.IsMap()) {
       return false;
     }
 
@@ -80,22 +84,45 @@ struct convert<kn::ShaderPermutationConfig> {
 };
 
 template <>
-struct convert<kn::ShaderConfig> {
-  static Node encode(const kn::ShaderConfig& rhs) {
+struct convert<kn::ShaderEntry> {
+  static Node encode(const kn::ShaderEntry& rhs) {
     Node node;
     node["entry"] = rhs.Entry;
     node["target"] = rhs.Target;
     node["permutations"] = rhs.Permutations;
+
     return node;
   }
 
-  static bool decode(const Node& node, kn::ShaderConfig& rhs) {
-    if (!node.IsMap() || node.size() < 2) {
+  static bool decode(const Node& node, kn::ShaderEntry& rhs) {
+    if (!node.IsMap()) {
       return false;
     }
     rhs.Entry = node["entry"].as<std::string>();
     rhs.Target = node["target"].as<std::string>();
-    rhs.Permutations = node["permutations"].as<std::vector<kn::ShaderPermutationConfig>>();
+
+    if (node["permutations"]) {
+      rhs.Permutations = node["permutations"].as<std::vector<kn::ShaderPermutationConfig>>();
+    }
+
+    return true;
+  }
+};
+
+template <>
+struct convert<kn::ShaderConfig> {
+  static Node encode(const kn::ShaderConfig& rhs) {
+    Node node;
+    node = rhs.Entries;
+    return node;
+  }
+
+  static bool decode(const Node& node, kn::ShaderConfig& rhs) {
+    if (!node.IsSequence() || node.size() < 1) {
+      return false;
+    }
+
+    rhs.Entries = node.as<std::vector<kn::ShaderEntry>>();
 
     return true;
   }

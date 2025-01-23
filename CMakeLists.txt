@@ -112,7 +112,7 @@ configure_file(
 # Add extern subdirectories                               #
 ###########################################################
 
-set(YAML_BUILD_SHARED_LIBS OFF)
+set(YAML_BUILD_SHARED_LIBS CACHE BOOL OFF)
 add_subdirectory(third_party/yaml-cpp)
 
 ###########################################################

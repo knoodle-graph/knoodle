@@ -123,7 +123,7 @@ int32_t main(int32_t argc, char** argv) {
   }
 
   for (const auto& ShaderHeader : ShaderHeaders) {
-    KN_LOG(LogShaderCompiler, Debug, "Compiling permutation: {}", ShaderHeader.Name);
+    KN_LOG(LogShaderCompiler, Debug, "Compiling variation: {}", ShaderHeader.Name);
     if (!compile(ShaderHeader)) {
       KN_LOG(LogShaderCompiler, Error, "Failed to compile shader: {}", ShaderHeader.Input.filename().string());
       return 1;
