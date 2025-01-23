@@ -26,6 +26,12 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Install Vulkan
+        shell: bash
+        run: |
+          sudo bash ${{github.workspace}}/scripts/${{matrix.vk-script}}
+          vulkaninfo
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:

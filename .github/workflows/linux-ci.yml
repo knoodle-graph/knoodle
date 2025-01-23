@@ -66,8 +66,7 @@ jobs:
     - name: Install Vulkan
       shell: bash
       run: |
-        sudo chmod -x ./scripts/${{matrix.vk-script}}
-        sudo ./scripts/${{matrix.vk-script}}
+        sudo bash ${{github.workspace}}/scripts/${{matrix.vk-script}}
         vulkaninfo
 
     - name: Create Build Environment

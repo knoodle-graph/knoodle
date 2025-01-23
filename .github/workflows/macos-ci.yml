@@ -46,6 +46,14 @@ jobs:
         gcc
         llvm
 
+    - name: Setup Vulkan SDK
+      run: |
+        wget -o vulkan-sdk.zip https://sdk.lunarg.com/sdk/download/1.4.304.0/mac/vulkansdk-macos-1.4.304.0.zip
+        unzip vulkan-sdk.zip
+        rm vulkan-sdk.zip
+        sudo ./InstallVulkan.app/Contents/MacOS/InstallVulkan --root "installation path" --accept-licenses --default-answer --confirm-command install
+        vulkaninfo
+
     - name: Create Build Environment
       run: cmake -E make_directory ${{github.workspace}}/build
 

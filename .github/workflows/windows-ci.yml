@@ -38,6 +38,16 @@ jobs:
       with:
         submodules: recursive
 
+    - name: Setup Vulkan SDK
+      run: |
+        curl -o VulkanSDK-Installer.exe https://sdk.lunarg.com/sdk/download/1.4.304.0/windows/VulkanSDK-1.4.304.0-Installer.exe
+        VulkanSDK-Installer.exe --accept-licenses --default-answer --confirm-command install
+
+    - name: Verify Vulkan SDK
+      run: |
+        vulkaninfoSDK
+        del VulkanSDK-Installer.exe
+
     - name: Create Build Environment
       run: cmake -E make_directory ${{github.workspace}}/build
 
