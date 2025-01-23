@@ -41,8 +41,10 @@ jobs:
             cxx: clang++
           - arch: x64
             os: ubuntu-latest
+            vk-script: install_vulkan_ubuntu.sh
           - arch: arm64
             os: rasp-arm64
+            vk-script: install_vulkan_raspbian.sh
 
     runs-on: ${{ matrix.os }}
 
@@ -60,6 +62,13 @@ jobs:
         clang
         build-essential
         ninja-build
+
+    - name: Install Vulkan
+      shell: bash
+      run: |
+        sudo chmod -x ./scripts/${{matrix.vk-script}}
+        sudo ./scripts/${{matrix.vk-script}}
+        vulkaninfo
 
     - name: Create Build Environment
       run: cmake -E make_directory ${{github.workspace}}/build
