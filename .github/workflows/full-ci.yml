@@ -49,14 +49,18 @@ jobs:
           sudo apt update -y
           sudo apt install -y ninja-build lcov g++
 
-      - name: Install Vulkan
+      - name: Setup Vulkan SDK
         shell: bash
         run: |
-          sudo bash ${{github.workspace}}/scripts/${{matrix.vk-script}}
-          vulkaninfo
+          sudo bash ${{github.workspace}}/scripts/install_vulkan_ubuntu.sh
+
+      - name: Verify Vulkan
+        id: check-vulkan
+        continue-on-error: true
+        run: vulkaninfo
 
       - name: Configure CMake
-        run: cmake -B build -S . -G Ninja -DCMAKE_CXX_FLAGS="-fprofile-arcs -ftest-coverage" -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+        run: cmake -B build -S . -G Ninja -DCMAKE_CXX_FLAGS="-fprofile-arcs -ftest-coverage" -DKNOODLE_WITH_VULKAN=${{ steps.check-vulkan.outcome == 'success' && ON || OFF }}
 
       - name: Build
         run: cmake --build build
@@ -92,8 +96,18 @@ jobs:
           sudo apt update -y
           sudo apt install -y ninja-build clang clang-tidy-17
 
+      - name: Setup Vulkan SDK
+        shell: bash
+        run: |
+          sudo bash ${{github.workspace}}/scripts/install_vulkan_ubuntu.sh
+
+      - name: Verify Vulkan
+        id: check-vulkan
+        continue-on-error: true
+        run: vulkaninfo
+
       - name: Configure CMake
-        run: cmake -B build -S . -G Ninja -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_TESTING=OFF -DCMAKE_CXX_CLANG_TIDY="clang-tidy-17;-warnings-as-errors=*"
+        run: cmake -B build -S . -G Ninja -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_TESTING=OFF -DCMAKE_CXX_CLANG_TIDY="clang-tidy-17;-warnings-as-errors=*" -DKNOODLE_WITH_VULKAN=${{ steps.check-vulkan.outcome == 'success' && ON || OFF }}
 
       - name: Build
         run: cmake --build build
@@ -116,8 +130,18 @@ jobs:
           sudo apt update -y
           sudo apt install -y clang ninja-build
 
+      - name: Setup Vulkan SDK
+        shell: bash
+        run: |
+          sudo bash ${{github.workspace}}/scripts/install_vulkan_ubuntu.sh
+
+      - name: Verify Vulkan
+        id: check-vulkan
+        continue-on-error: true
+        run: vulkaninfo
+
       - name: Configure CMake
-        run: cmake -B build -S . -G Ninja -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_FLAGS="-fsanitize=${{ matrix.sanitizers }}"
+        run: cmake -B build -S . -G Ninja -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_CXX_FLAGS="-fsanitize=${{ matrix.sanitizers }}" -DKNOODLE_WITH_VULKAN=${{ steps.check-vulkan.outcome == 'success' && ON || OFF }}
 
       - name: Build
         run: cmake --build build

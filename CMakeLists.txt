@@ -82,7 +82,7 @@ option(KNOODLE_BUILD_EXAMPLES "Build the examples" ON)
 option(KNOODLE_BUILD_DOCS "Build the documentation" OFF)
 option(KNOODLE_BUILD_INSTALL "Build the installation" ON)
 option(KNOODLE_BUILD_TOOLS "Build the tools" ON)
-option(KNOODLE_WITH_VULKAN "Build with Vulkan support" ON)
+option(KNOODLE_WITH_VULKAN "Build with Vulkan support" OFF)
 
 set(LIB_TYPE STATIC)
 
@@ -112,8 +112,42 @@ configure_file(
 # Add extern subdirectories                               #
 ###########################################################
 
-set(YAML_BUILD_SHARED_LIBS CACHE BOOL OFF)
+function(target_link_libraries_system target)
+  set(options PRIVATE PUBLIC INTERFACE)
+  cmake_parse_arguments(TLLS "${options}" "" "" ${ARGN})
+  foreach(op ${options})
+    if(TLLS_${op})
+      set(scope ${op})
+    endif()
+  endforeach(op)
+  set(libs ${TLLS_UNPARSED_ARGUMENTS})
+
+  foreach(lib ${libs})
+    get_target_property(lib_include_dirs ${lib} INTERFACE_INCLUDE_DIRECTORIES)
+    if(lib_include_dirs)
+      if(scope)
+        target_include_directories(${target} SYSTEM ${scope} ${lib_include_dirs})
+      else()
+        target_include_directories(${target} SYSTEM PRIVATE ${lib_include_dirs})
+      endif()
+    else()
+      message("Warning: ${lib} doesn't set INTERFACE_INCLUDE_DIRECTORIES. No include_directories set.")
+    endif()
+    if(scope)
+      target_link_libraries(${target} ${scope} ${lib})
+    else()
+      target_link_libraries(${target} ${lib})
+    endif()
+  endforeach()
+endfunction(target_link_libraries_system)
+
+set(YAML_CPP_BUILD_TOOLS OFF CACHE INTERNAL "")
+set(YAML_BUILD_SHARED_LIBS OFF CACHE INTERNAL "")
 add_subdirectory(third_party/yaml-cpp)
+target_link_libraries_system(yaml-cpp)
+target_compile_options(yaml-cpp
+  PRIVATE
+    $<$<CXX_COMPILER_ID:MSVC>:/wd4267>)
 
 ###########################################################
 # Add intern subdirectories                               #

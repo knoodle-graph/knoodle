@@ -7,8 +7,6 @@ knoodle_setup_module(
   API KN_VULKAN_API
   PRIVATE_DEPENDS core ghi Vulkan::Vulkan)
 
-option(KN_VULKAN_DEBUG "Enable Vulkan debug" OFF)
-
 target_sources(vulkan-ghi
   PRIVATE
     "vulkan_ghi.cpp"

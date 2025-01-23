@@ -63,11 +63,15 @@ jobs:
         build-essential
         ninja-build
 
-    - name: Install Vulkan
+    - name: Setup Vulkan SDK
       shell: bash
       run: |
         sudo bash ${{github.workspace}}/scripts/${{matrix.vk-script}}
-        vulkaninfo
+
+    - name: Verify Vulkan
+      id: check-vulkan
+      continue-on-error: true
+      run: vulkaninfo
 
     - name: Create Build Environment
       run: cmake -E make_directory ${{github.workspace}}/build
@@ -80,7 +84,9 @@ jobs:
         -B "${{github.workspace}}/build"
         -DCMAKE_BUILD_TYPE=${{matrix.configuration}}
         -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-        -D-DCMAKE_CXX_COMPILER=${{matrix.cxx}}
+        -DCMAKE_CXX_COMPILER=${{ matrix.cxx }}
+        -DKNOODLE_WITH_VULKAN=${{ steps.check-vulkan.outcome == 'success' && ON || OFF }}
+
 
     - name: Build
       working-directory: ${{github.workspace}}/build

@@ -35,7 +35,7 @@ cmake_policy(SET CMP0103 NEW)
   target_compile_features(${KN_MOD_TARGET} INTERFACE cxx_std_${CMAKE_CXX_STANDARD})
   target_compile_options(${KN_MOD_TARGET}
     PRIVATE
-      $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX /wd4251 /wd4275>
+      $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX /wd4251 /wd4275 /external:anglebrackets /external:W0>
       $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -Wpedantic -Werror>)
 
   target_link_libraries(${KN_MOD_TARGET}

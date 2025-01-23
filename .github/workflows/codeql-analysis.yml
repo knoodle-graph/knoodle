@@ -30,7 +30,16 @@ jobs:
         shell: bash
         run: |
           sudo bash ${{github.workspace}}/scripts/${{matrix.vk-script}}
-          vulkaninfo
+
+      - name: Setup Vulkan SDK
+        shell: bash
+        run: |
+          sudo bash ${{github.workspace}}/scripts/install_vulkan_ubuntu.sh
+
+      - name: Verify Vulkan
+        id: check-vulkan
+        continue-on-error: true
+        run: vulkaninfo
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
@@ -38,8 +47,19 @@ jobs:
           languages: ${{ matrix.language }}
           source-root: source
 
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
+      - name: Create Build Environment
+        run: cmake -E make_directory ${{github.workspace}}/build
+
+      - name: Configure CMake
+        run: >-
+          cmake
+          -G Ninja
+          -S "${{github.workspace}}"
+          -B "${{github.workspace}}/build"
+          -DCMAKE_BUILD_TYPE=${{matrix.configuration}}
+          -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+          -DCMAKE_CXX_COMPILER=${{ matrix.cxx }}
+          -DKNOODLE_WITH_VULKAN=${{ steps.check-vulkan.outcome == 'success' && ON || OFF }}
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
