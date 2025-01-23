@@ -32,15 +32,27 @@
 #include <dxc/dxcapi.h>
 #include <wrl.h>
 #include <cstdint>
+#include <cwchar>
 #include <filesystem>
 #include <iostream>
 #include <set>
 #include "log/log.hpp"
+#include "shader_compiler_structures.hpp"
 
 using namespace Microsoft::WRL;
 
 namespace kn {
-bool compile(const std::filesystem::path& InputFile, const std::set<std::string>& CompileArgs) {
+std::wstring convertToWideString(const char* str) {
+  std::wstring wstr;
+
+  std::mbstate_t state = std::mbstate_t();
+  std::size_t len = 1 + std::mbsrtowcs(nullptr, &str, 0, &state);
+  wstr.resize(len);
+  std::mbsrtowcs(&wstr[0], &str, wstr.size(), &state);
+  return wstr;
+}
+
+bool compile(const ShaderCompileHeader& shaderHeader) {
   ComPtr<IDxcUtils> pUtils;
   ComPtr<IDxcCompiler3> pCompiler;
 
@@ -50,10 +62,40 @@ bool compile(const std::filesystem::path& InputFile, const std::set<std::string>
   ComPtr<IDxcIncludeHandler> pIncludeHandler;
   pUtils->CreateDefaultIncludeHandler(&pIncludeHandler);
 
-  std::wstring Filename = InputFile.wstring();
-  std::wstring OutputFilename = std::filesystem::path(InputFile).replace_extension("spv").wstring();
+  std::wstring Filename = shaderHeader.Input.wstring();
+  std::wstring OutputFilename = std::filesystem::path(shaderHeader.Output).replace_extension("spv").wstring();
 
-  LPCWSTR pszArgs[] = {Filename.c_str(), L"-spirv", L"-E", L"main", L"-T", L"ps_6_0", L"-Fo", OutputFilename.c_str()};
+  std::vector<LPCWSTR> Args = {
+      Filename.c_str(),
+      L"-spirv",
+  };
+
+  std::wstring WideEntry;
+  if (!shaderHeader.Entry.empty()) {
+    Args.push_back(L"-E");
+    WideEntry = convertToWideString(shaderHeader.Entry.c_str());
+    Args.push_back(WideEntry.c_str());
+  }
+
+  std::wstring WideTarget = convertToWideString(shaderHeader.Target.c_str());
+  if (!shaderHeader.Target.empty()) {
+    Args.push_back(L"-T");
+    WideTarget = convertToWideString(shaderHeader.Target.c_str());
+    Args.push_back(WideTarget.c_str());
+  }
+
+  Args.push_back(L"-Fo");
+  Args.push_back(OutputFilename.c_str());
+
+  std::vector<std::wstring> WideArgs;
+  for (const auto& ShaderArg : shaderHeader.Args) {
+    WideArgs.push_back(convertToWideString(ShaderArg.c_str()));
+  }
+
+  for (const auto& WideArg : WideArgs) {
+    Args.push_back(L"-D");
+    Args.push_back(WideArg.c_str());
+  }
 
   ComPtr<IDxcBlobEncoding> pSource = nullptr;
   pUtils->LoadFile(Filename.c_str(), nullptr, &pSource);
@@ -67,8 +109,8 @@ bool compile(const std::filesystem::path& InputFile, const std::set<std::string>
 
   ComPtr<IDxcResult> pResults;
   pCompiler->Compile(&Source,                 // Source buffer.
-                     pszArgs,                 // Array of pointers to arguments.
-                     _countof(pszArgs),       // Number of arguments.
+                     Args.data(),             // Array of pointers to arguments.
+                     Args.size(),             // Number of arguments.
                      pIncludeHandler.Get(),   // User-provided interface to handle #include directives (optional).
                      IID_PPV_ARGS(&pResults)  // Compiler output status, buffer, and errors.
   );

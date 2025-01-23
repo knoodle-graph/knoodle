@@ -33,6 +33,7 @@
 #include <fstream>
 #include <set>
 #include <sstream>
+#include "common.hpp"
 #include "log/log.hpp"
 #include "shader_compiler_structures.hpp"
 #include "string_utils.hpp"
@@ -47,7 +48,23 @@ bool processYmlFile(const std::filesystem::path& filename, ShaderConfig& shaderC
     }
 
     shaderConfig = Config.as<ShaderConfig>();
-    KN_LOG(LogShaderCompiler, Info, "Processed YAML file: {}", filename.string());
+
+    int32_t PermutationsCount = static_cast<int32_t>(shaderConfig.Permutations.size());
+    if (PermutationsCount == 0) {
+      KN_LOG(LogShaderCompiler, Debug, "No permutations found in shader file: {}", filename.string());
+      return true;
+    }
+
+    real_t PossibilitiesCount = 0.0;
+    for (const auto& permutation : shaderConfig.Permutations) {
+      PossibilitiesCount += static_cast<real_t>(permutation.Possibilities.size());
+    }
+    real_t AveragePossibilities = PossibilitiesCount / static_cast<real_t>(PermutationsCount);
+
+    PermutationsCount = static_cast<int32_t>(std::round(std::pow(AveragePossibilities, PermutationsCount)));
+
+    KN_LOG(LogShaderCompiler, Info, "Processed shader file: {} -- Found {} permutations", filename.string(),
+           PermutationsCount);
 
   } catch (const std::exception& e) {
     KN_LOG(LogShaderCompiler, Error, "Failed to process yml file: {} -- Exception caught: {}", filename.string(),
@@ -58,15 +75,58 @@ bool processYmlFile(const std::filesystem::path& filename, ShaderConfig& shaderC
   return true;
 }
 
-bool setupPermutations(const ShaderConfig& shaderConfig, std::set<std::filesystem::path>& processedFiles) {
+std::vector<std::vector<std::string>> setupPermutations(const ShaderConfig& shaderConfig) {
+  std::vector<std::vector<std::string>> possibilities;
+
   for (const auto& permutation : shaderConfig.Permutations) {
-	  const std::filesystem::path outputDir = *processedFiles.begin();
+    possibilities.emplace_back(permutation.Possibilities);
   }
 
-  return true;
+  std::vector<std::vector<std::string>> combos;
+  if (possibilities.empty()) {
+    return combos;
+  }
+
+  std::vector<size_t> indices(possibilities.size(), 0);
+
+  while (true) {
+    std::vector<std::string> combo;
+    combo.reserve(possibilities.size());
+    for (size_t i = 0; i < possibilities.size(); ++i) {
+      combo.push_back(possibilities[i][indices[i]]);
+    }
+    combos.push_back(std::move(combo));
+
+    size_t pos = possibilities.size() - 1;
+    while (true) {
+      indices[pos]++;
+      if (indices[pos] < possibilities[pos].size()) {
+        break;
+      }
+      indices[pos] = 0;
+      if (pos == 0) {
+        return combos;
+      }
+      --pos;
+    }
+  }
+
+  return combos;
 }
 
-bool preProcessShader(const std::filesystem::path& inputFile, std::set<std::filesystem::path>& processedFiles) {
+std::vector<std::string> setupCompileArgsForCombo(const std::vector<ShaderPermutationConfig>& permutations,
+                                                  const std::vector<std::string>& combo) {
+  std::vector<std::string> activeDefines;
+  for (size_t i = 0; i < permutations.size(); ++i) {
+    for (const auto& d : permutations[i].Defines) {
+      const std::string define = d + '=' + combo[i];
+      activeDefines.push_back(define);
+    }
+  }
+  return activeDefines;
+}
+
+bool preProcessShader(const std::filesystem::path& inputFile, std::vector<ShaderCompileHeader>& outputHeader) {
   KN_LOG(LogShaderCompiler, Info, "Starting preprocessing for shader: {}", inputFile.string());
 
   if (!std::filesystem::exists(inputFile) || !std::filesystem::is_regular_file(inputFile)) {
@@ -109,6 +169,8 @@ bool preProcessShader(const std::filesystem::path& inputFile, std::set<std::file
 
   std::stringstream YmlContent;
   std::stringstream HlslContent;
+
+  std::filesystem::path HlslFile;
 
   try {
     while (std::getline(File, Line)) {
@@ -159,7 +221,7 @@ bool preProcessShader(const std::filesystem::path& inputFile, std::set<std::file
     }
 
     if (!HlslContent.str().empty()) {
-      std::filesystem::path HlslFile = OutputDir / inputFile.filename().replace_extension("hlsl");
+      HlslFile = OutputDir / inputFile.filename().replace_extension("hlsl");
       std::ofstream Hlsl(HlslFile);
       if (!Hlsl.is_open() || !Hlsl.good()) {
         KN_LOG(LogShaderCompiler, Error, "Failed to open file: {}", HlslFile.string());
@@ -169,9 +231,6 @@ bool preProcessShader(const std::filesystem::path& inputFile, std::set<std::file
       Hlsl << HlslContent.rdbuf();
       Hlsl.close();
       KN_LOG(LogShaderCompiler, Info, "Written HLSL content to file: {}", HlslFile.string());
-
-      processedFiles.clear();
-      processedFiles.emplace(std::move(HlslFile));
     }
   } catch (const std::exception& e) {
     KN_LOG(LogShaderCompiler, Error, "Exception caught: {}", e.what());
@@ -183,8 +242,35 @@ bool preProcessShader(const std::filesystem::path& inputFile, std::set<std::file
     return false;
   }
 
-  if (!setupPermutations(ShaderConfig, processedFiles)) {
-    return false;
+  std::vector<std::vector<std::string>> Combos = setupPermutations(ShaderConfig);
+  for (const auto& combo : Combos) {
+    std::vector<std::string> ShaderArgs = setupCompileArgsForCombo(ShaderConfig.Permutations, combo);
+
+    std::filesystem::path ShaderFilename = inputFile.filename().replace_extension("");
+
+    std::stringstream OutputName;
+    OutputName << ShaderFilename.string();
+    for (size_t i = 0; i < combo.size(); ++i) {
+      OutputName << "_" + ShaderConfig.Permutations[i].Name + combo[i];
+    }
+
+    size_t HashCode = std::hash<std::string>{}(OutputName.str());
+    OutputName.str("");
+
+    OutputName << std::hex << HashCode;
+    const std::string PermutationName = OutputName.str();
+
+    OutputName << ".hlsl";
+    const std::filesystem::path OutputFile = OutputDir / OutputName.str();
+
+    outputHeader.emplace_back(ShaderCompileHeader{
+        .Name = PermutationName,
+        .Input = HlslFile,
+        .Output = OutputDir / OutputFile,
+        .Entry = ShaderConfig.Entry,
+        .Target = ShaderConfig.Target,
+        .Args = std::move(ShaderArgs),
+    });
   }
 
   KN_LOG(LogShaderCompiler, Info, "Preprocessing completed for shader: {}", inputFile.string());

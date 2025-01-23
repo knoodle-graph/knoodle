@@ -33,14 +33,23 @@
 #include <vector>
 
 namespace kn {
+struct ShaderCompileHeader {
+  const std::string Name;
+  const std::filesystem::path Input;
+  const std::filesystem::path Output;
+  const std::string Entry;
+  const std::string Target;
+  const std::vector<std::string> Args;
+};
+
 struct ShaderPermutationConfig {
   std::string Name;
-  std::string Entry;
   std::vector<std::string> Possibilities;
   std::vector<std::string> Defines;
 };
 
 struct ShaderConfig {
+  std::string Entry;
   std::string Target;
   std::vector<ShaderPermutationConfig> Permutations;
 };
@@ -52,19 +61,17 @@ struct convert<kn::ShaderPermutationConfig> {
   static Node encode(const kn::ShaderPermutationConfig& rhs) {
     Node node;
     node["name"] = rhs.Name;
-    node["entry"] = rhs.Entry;
     node["possibilities"] = rhs.Possibilities;
     node["defines"] = rhs.Defines;
     return node;
   }
 
   static bool decode(const Node& node, kn::ShaderPermutationConfig& rhs) {
-    if (!node.IsMap() || node.size() != 4) {
+    if (!node.IsMap() || node.size() != 3) {
       return false;
     }
 
     rhs.Name = node["name"].as<std::string>();
-    rhs.Entry = node["entry"].as<std::string>();
     rhs.Possibilities = node["possibilities"].as<std::vector<std::string>>();
     rhs.Defines = node["defines"].as<std::vector<std::string>>();
 
@@ -76,16 +83,17 @@ template <>
 struct convert<kn::ShaderConfig> {
   static Node encode(const kn::ShaderConfig& rhs) {
     Node node;
+    node["entry"] = rhs.Entry;
     node["target"] = rhs.Target;
     node["permutations"] = rhs.Permutations;
     return node;
   }
 
   static bool decode(const Node& node, kn::ShaderConfig& rhs) {
-    if (!node.IsMap() || node.size() < 1) {
+    if (!node.IsMap() || node.size() < 2) {
       return false;
     }
-
+    rhs.Entry = node["entry"].as<std::string>();
     rhs.Target = node["target"].as<std::string>();
     rhs.Permutations = node["permutations"].as<std::vector<kn::ShaderPermutationConfig>>();
 

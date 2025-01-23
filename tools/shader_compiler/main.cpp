@@ -32,10 +32,11 @@
 #include <filesystem>
 #include <set>
 #include "log/log.hpp"
+#include "shader_compiler_structures.hpp"
 
 namespace kn {
-extern bool compile(const std::filesystem::path& InputFile, const std::set<std::string>& CompileArgs);
-extern bool preProcessShader(const std::filesystem::path& inputFile, std::set<std::filesystem::path>& processedFiles);
+extern bool compile(const ShaderCompileHeader& shaderHeader);
+extern bool preProcessShader(const std::filesystem::path& inputFile, std::vector<ShaderCompileHeader>& outputHeader);
 }  // namespace kn
 
 using namespace kn;
@@ -112,19 +113,19 @@ int32_t main(int32_t argc, char** argv) {
 
   auto StartTime = std::chrono::high_resolution_clock::now();
 
-  std::set<std::filesystem::path> ProcessedFiles;
+  std::vector<ShaderCompileHeader> ShaderHeaders;
   for (const auto& InputFile : InputFiles) {
     KN_LOG(LogShaderCompiler, Info, "Preprocessing shader: {}", InputFile.string());
-    if (!preProcessShader(InputFile, ProcessedFiles)) {
+    if (!preProcessShader(InputFile, ShaderHeaders)) {
       KN_LOG(LogShaderCompiler, Error, "Failed to preprocess shader: {}", InputFile.string());
       return 1;
     }
   }
 
-  for (const auto& HlslFile : ProcessedFiles) {
-    KN_LOG(LogShaderCompiler, Info, "Compiling shader: {}", HlslFile.filename().string());
-    if (!compile(HlslFile, CompileArgs)) {
-      KN_LOG(LogShaderCompiler, Error, "Failed to compile shader: {}", HlslFile.filename().string());
+  for (const auto& ShaderHeader : ShaderHeaders) {
+    KN_LOG(LogShaderCompiler, Debug, "Compiling permutation: {}", ShaderHeader.Name);
+    if (!compile(ShaderHeader)) {
+      KN_LOG(LogShaderCompiler, Error, "Failed to compile shader: {}", ShaderHeader.Input.filename().string());
       return 1;
     }
   }
