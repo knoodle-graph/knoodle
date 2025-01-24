@@ -1,4 +1,4 @@
-find_package(Vulkan REQUIRED COMPONENTS SPIRV-Tools OPTIONAL_COMPONENTS dxc MoltenVK)
+find_package(Vulkan REQUIRED COMPONENTS SPIRV-Tools dxc)
 
 set(ENABLE_SPIRV_CODEGEN CACHE BOOL "Enable SPIRV codegen" ON)
 
@@ -7,16 +7,14 @@ add_executable(shader_compiler
     "shader_compiler_utils.cpp"
     "shader_compiler_structures.hpp"
     $<$<BOOL:${Vulkan_dxc_exe_FOUND}>:dxc_compiler.cpp>
-    $<$<BOOL:${Vulkan_MoltenVK_FOUND}>:molten_compiler.cpp>
 )
 
 target_link_libraries(shader_compiler
   PUBLIC
     knoodle::core
     Vulkan::SPIRV-Tools
-    $<$<PLATFORM_ID:Windows>:Vulkan::dxc_lib>
-    $<$<PLATFORM_ID:Windows>:dxcompiler.lib>
-    $<$<PLATFORM_ID:Darwin>:Vulkan::MoltenVK>)
+    Vulkan::dxc_lib
+    $<$<PLATFORM_ID:Windows>:dxcompiler.lib>)
 
 target_include_directories(shader_compiler
   PUBLIC
