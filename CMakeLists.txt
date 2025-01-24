@@ -82,7 +82,7 @@ option(KNOODLE_BUILD_EXAMPLES "Build the examples" ON)
 option(KNOODLE_BUILD_DOCS "Build the documentation" OFF)
 option(KNOODLE_BUILD_INSTALL "Build the installation" ON)
 option(KNOODLE_BUILD_TOOLS "Build the tools" ON)
-option(KNOODLE_WITH_VULKAN "Build with Vulkan support" OFF)
+option(KNOODLE_WITH_VULKAN "Build with Vulkan support" ON)
 
 set(LIB_TYPE STATIC)
 
