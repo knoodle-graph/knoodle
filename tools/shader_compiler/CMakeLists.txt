@@ -23,7 +23,5 @@ target_include_directories(shader_compiler
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>)
 
-if(${CMAKE_CXX_PLATFORM_ID} STREQUAL "Windows") # Right now we only support dxc
-  add_test(NAME TestShaderCompiler COMMAND $<TARGET_FILE:shader_compiler> --log ${CMAKE_CURRENT_SOURCE_DIR}/test/test_shader_blend.kshader)
-  set_tests_properties(TestShaderCompiler PROPERTIES DEPENDS "shader_compiler")
-endif()
+add_test(NAME TestShaderCompiler COMMAND $<TARGET_FILE:shader_compiler> --log ${CMAKE_CURRENT_SOURCE_DIR}/test/test_shader_blend.kshader)
+set_tests_properties(TestShaderCompiler PROPERTIES DEPENDS "shader_compiler")
