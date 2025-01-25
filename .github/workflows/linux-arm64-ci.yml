@@ -67,6 +67,14 @@ jobs:
       continue-on-error: true
       run: vulkaninfo
 
+    - name: Cache Gradle packages
+      uses: actions/cache@v3
+      with:
+        path: 1.4.304.0/x86_64
+        key: ${{ runner.os }}-${{ hashFiles('1.4.304.0/README.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-
+  
     - name: Configure CMake
       run: >-
         cmake
@@ -87,6 +95,7 @@ jobs:
         cmake --install build --config ${{matrix.configuration}} --prefix install
 
     - uses: actions/upload-artifact@v4
+      name: Upload Build Artifact
       with:
         name: artifact-linux-arm64-${{matrix.configuration}}-${{matrix.compiler}}
         path: build
@@ -97,6 +106,7 @@ jobs:
       fail-fast: false
       matrix:
         configuration: [Debug, Release]
+        compiler: [gcc, clang]
 
     runs-on: rasp-arm64
 

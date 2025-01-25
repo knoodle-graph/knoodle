@@ -18,3 +18,5 @@ export C=aarch64-linux-gnu-gcc
 export CXX=aarch64-linux-gnu-g++
 
 ./vulkansdk -j $(nproc) vulkan-headers vulkan-loader vulkan-validationlayers spirv-headers dxc
+
+ls -la
