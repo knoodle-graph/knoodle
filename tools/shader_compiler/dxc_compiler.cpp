@@ -27,21 +27,23 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include <windows.h>
-
-#include <dxc/dxcapi.h>
-#include <wrl.h>
-#include <cstdint>
-#include <cwchar>
 #include <filesystem>
-#include <iostream>
-#include <set>
+#include <fstream>
 #include "log/log.hpp"
 #include "shader_compiler_structures.hpp"
 
-using namespace Microsoft::WRL;
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <atlbase.h>
+#include <windows.h>
+#else
+#define __EMULATE_UUID 1
+#endif
+
+#include <dxc/dxcapi.h>
 
 namespace kn {
+
 std::wstring convertToWideString(const char* str) {
   std::wstring wstr;
 
@@ -53,13 +55,13 @@ std::wstring convertToWideString(const char* str) {
 }
 
 bool compile(const ShaderCompileHeader& shaderHeader) {
-  ComPtr<IDxcUtils> pUtils;
-  ComPtr<IDxcCompiler3> pCompiler;
+  CComPtr<IDxcUtils> pUtils = nullptr;
+  CComPtr<IDxcCompiler3> pCompiler = nullptr;
 
   DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&pUtils));
   DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&pCompiler));
 
-  ComPtr<IDxcIncludeHandler> pIncludeHandler;
+  CComPtr<IDxcIncludeHandler> pIncludeHandler;
   pUtils->CreateDefaultIncludeHandler(&pIncludeHandler);
 
   std::wstring Filename = shaderHeader.Input.wstring();
@@ -100,7 +102,7 @@ bool compile(const ShaderCompileHeader& shaderHeader) {
     Args.push_back(WideArg.c_str());
   }
 
-  ComPtr<IDxcBlobEncoding> pSource = nullptr;
+  CComPtr<IDxcBlobEncoding> pSource = nullptr;
   pUtils->LoadFile(Filename.c_str(), nullptr, &pSource);
   DxcBuffer Source;
 
@@ -110,15 +112,15 @@ bool compile(const ShaderCompileHeader& shaderHeader) {
     Source.Encoding = DXC_CP_ACP;
   }
 
-  ComPtr<IDxcResult> pResults;
+  CComPtr<IDxcResult> pResults;
   pCompiler->Compile(&Source,                 // Source buffer.
                      Args.data(),             // Array of pointers to arguments.
                      Args.size(),             // Number of arguments.
-                     pIncludeHandler.Get(),   // User-provided interface to handle #include directives (optional).
+                     pIncludeHandler,         // User-provided interface to handle #include directives (optional).
                      IID_PPV_ARGS(&pResults)  // Compiler output status, buffer, and errors.
   );
 
-  ComPtr<IDxcBlobUtf8> pErrors = nullptr;
+  CComPtr<IDxcBlobUtf8> pErrors = nullptr;
   pResults->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&pErrors), nullptr);
 
   if (pErrors != nullptr && pErrors->GetStringLength() != 0) {
@@ -132,32 +134,19 @@ bool compile(const ShaderCompileHeader& shaderHeader) {
     return false;
   }
 
-  ComPtr<IDxcBlob> pShader = nullptr;
-  ComPtr<IDxcBlobUtf16> pShaderName = nullptr;
+  CComPtr<IDxcBlob> pShader = nullptr;
+  CComPtr<IDxcBlobWide> pShaderName = nullptr;
   pResults->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&pShader), &pShaderName);
   if (pShader != nullptr) {
-    FILE* fp = NULL;
-    _wfopen_s(&fp, pShaderName->GetStringPointer(), L"wb");
-    if (fp) {
-      fwrite(pShader->GetBufferPointer(), pShader->GetBufferSize(), 1, fp);
-      fclose(fp);
+    const std::filesystem::path outputPath = pShaderName->GetStringPointer();
+    std::ofstream out(outputPath, std::ios::binary);
+    if (!out.is_open()) {
+      KN_LOG(LogDxc, Error, "Failed to open file {}", outputPath.string());
+      return false;
     }
-  }
 
-  ComPtr<IDxcBlob> pReflectionData;
-  pResults->GetOutput(DXC_OUT_REFLECTION, IID_PPV_ARGS(&pReflectionData), nullptr);
-  if (pReflectionData != nullptr) {
-    DxcBuffer ReflectionData;
-    ReflectionData.Encoding = DXC_CP_ACP;
-    ReflectionData.Ptr = pReflectionData->GetBufferPointer();
-    ReflectionData.Size = pReflectionData->GetBufferSize();
-
-    FILE* fp = NULL;
-    _wfopen_s(&fp, pShaderName->GetStringPointer(), L"wb");
-    if (fp) {
-      fwrite(pReflectionData->GetBufferPointer(), pReflectionData->GetBufferSize(), 1, fp);
-      fclose(fp);
-    }
+    out.write(reinterpret_cast<const char*>(pShader->GetBufferPointer()), pShader->GetBufferSize());
+    out.close();
   }
 
   return true;

@@ -67,13 +67,12 @@ jobs:
       continue-on-error: true
       run: vulkaninfo
 
-    - name: Cache Gradle packages
+    - name: Cache Vulkan libs
+      if: steps.check-vulkan.outcome == 'success'
       uses: actions/cache@v3
       with:
         path: 1.4.304.0/x86_64
-        key: ${{ runner.os }}-${{ hashFiles('1.4.304.0/README.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-
+        key: vulkan-1.4.304.0-arm64
   
     - name: Configure CMake
       run: >-

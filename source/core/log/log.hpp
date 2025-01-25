@@ -29,7 +29,7 @@
 
 #pragma once
 
-#include <format>
+#include <fmt/format.h>
 #include <iostream>
 
 namespace kn {
@@ -38,4 +38,4 @@ class Log {};
 
 // #define KN_LOG(CATEGORY, VERBOSITY, ...) kn::Log::log(&CATEGORY, VERBOSITY, ##__VA_ARGS__)
 #define KN_LOG(CATEGORY, VERBOSITY, ...) \
-  std::cout << #CATEGORY << " [" << #VERBOSITY << "] " << std::format(__VA_ARGS__) << std::endl
+  std::cout << #CATEGORY << " [" << #VERBOSITY << "] " << fmt::format(__VA_ARGS__) << std::endl

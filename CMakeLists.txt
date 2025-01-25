@@ -5,14 +5,21 @@ cmake_minimum_required(VERSION 3.25)
 ###########################################################
 
 set(CMAKE_CXX_STANDARD 20)
-
-set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
+      "Choose the type of build, options are:
+        None Debug Release RelWithDebInfo Profile."
+      FORCE)
+endif()
 
 ###########################################################
 # Project settings                                        #
@@ -23,7 +30,7 @@ project(
   VERSION 0.0.1
   DESCRIPTION "A tool for creating procedural textures using a node-based graph editor."
   HOMEPAGE_URL "knoodlegraph.org"
-  LANGUAGES CXX C)
+  LANGUAGES C CXX)
 
 enable_testing()
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -36,26 +43,22 @@ endif()
 # Redirect outputs                                        #
 ###########################################################
 
-set(BUILD_CONFIG_DIR
-  "$<$<NOT:$<PLATFORM_ID:Windows>>:${CMAKE_BUILD_TYPE}>")
-string(TOLOWER ${BUILD_CONFIG_DIR} BUILD_CONFIG_DIR)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
-set(BUILD_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${BUILD_SUBDIR_NAME}")
-
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${BUILD_OUTPUT_DIR}lib")
-set(ARCHIVE_OUTPUT_DIRECTORY "${BUILD_OUTPUT_DIR}lib")
-
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${BUILD_OUTPUT_DIR}bin")
-set(LIBRARY_OUTPUT_DIRECTORY "${BUILD_OUTPUT_DIR}bin")
-
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${BUILD_OUTPUT_DIR}bin")
-set(RUNTIME_OUTPUT_DIRECTORY "${BUILD_OUTPUT_DIR}bin")
-
-message(STATUS "Generator: ${CMAKE_GENERATOR}")
-message(STATUS "Build output directory: ${BUILD_OUTPUT_DIR}")
-message(STATUS "Archive output directory: ${ARCHIVE_OUTPUT_DIRECTORY}")
-message(STATUS "Library output directory: ${LIBRARY_OUTPUT_DIRECTORY}")
-message(STATUS "Executable output directory: ${EXECUTABLE_OUTPUT_PATH}")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/lib")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/lib")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/bin")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_BINARY_DIR}/lib")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_BINARY_DIR}/lib")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_BINARY_DIR}/bin")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/lib")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/lib")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/bin")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_PROFILE "${CMAKE_BINARY_DIR}/lib")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_PROFILE "${CMAKE_BINARY_DIR}/lib")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_PROFILE "${CMAKE_BINARY_DIR}/bin")
 
 ###########################################################
 # Global Options                                          #

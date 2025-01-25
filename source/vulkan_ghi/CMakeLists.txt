@@ -1,3 +1,5 @@
+message(STATUS "Vulkan env: $ENV{VULKAN_SDK}")
+
 find_package(Vulkan REQUIRED)
 
 add_library(vulkan-ghi SHARED)
