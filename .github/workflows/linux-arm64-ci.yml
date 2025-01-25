@@ -103,9 +103,9 @@ jobs:
     steps:  
     - uses: actions/download-artifact@v4
       with:
-        name: artifact-linux-arm64-${{matrix.configuration}}-Debug
+        name: artifact-linux-arm64-${{matrix.configuration}}-${{matrix.compiler}}
         path: build
-    
+        retention-days: 1
 
     - name: Test
       working-directory: "${{github.workspace}}/build"
