@@ -26,6 +26,16 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Install Dependencies
+        run: >-
+          sudo apt update -y &&
+          sudo apt install -y
+          cmake
+          g++
+          clang
+          build-essential
+          ninja-build
+
       - name: Install Vulkan
         shell: bash
         run: |

@@ -88,7 +88,7 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: artifact-linux-arm64-${{matrix.configuration}}
+        name: artifact-linux-arm64-${{matrix.configuration}}-${{matrix.compiler}}
         path: build
 
   test:
@@ -103,7 +103,7 @@ jobs:
     steps:  
     - uses: actions/download-artifact@v4
       with:
-        name: artifact-linux-arm64-${{matrix.configuration}}
+        name: artifact-linux-arm64-${{matrix.configuration}}-Debug
         path: build
     
 
