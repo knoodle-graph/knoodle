@@ -51,7 +51,7 @@ jobs:
         curl -o vulkan-sdk.zip https://sdk.lunarg.com/sdk/download/1.4.304.0/mac/vulkansdk-macos-1.4.304.0.zip
         unzip vulkan-sdk.zip
         rm vulkan-sdk.zip
-        sudo ./InstallVulkan.app/Contents/MacOS/InstallVulkan --root ~/VulkanSDK/1.4.304.0 --accept-licenses --default-answer --confirm-command install com.lunarg.vulkan.core com.lunarg.vulkan.usr
+        sudo ./InstallVulkan.app/Contents/MacOS/InstallVulkan --root ~/VulkanSDK/1.4.304.0 --accept-licenses --default-answer --confirm-command install com.lunarg.vulkan.core com.lunarg.vulkan.usr com.lunarg.vulkan.ios com.lunarg.vulkan.dxc
         cd ~/VulkanSDK/1.4.304.0
         sudo ./install_vulkan.py
 

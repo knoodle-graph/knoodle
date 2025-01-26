@@ -6,8 +6,7 @@ add_executable(shader_compiler
     "main.cpp"
     "shader_compiler_utils.cpp"
     "shader_compiler_structures.hpp"
-    $<$<BOOL:${Vulkan_dxc_exe_FOUND}>:dxc_compiler.cpp>
-)
+    "dxc_compiler.cpp")
 
 target_link_libraries(shader_compiler
   PUBLIC
