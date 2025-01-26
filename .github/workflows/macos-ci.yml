@@ -46,6 +46,20 @@ jobs:
         gcc
         llvm
 
+    - name: Setup Vulkan SDK
+      run: |
+        curl -o vulkan-sdk.zip https://sdk.lunarg.com/sdk/download/1.4.304.0/mac/vulkansdk-macos-1.4.304.0.zip
+        unzip vulkan-sdk.zip
+        rm vulkan-sdk.zip
+        sudo ./InstallVulkan.app/Contents/MacOS/InstallVulkan --root ~/VulkanSDK/1.4.304.0 --accept-licenses --default-answer --confirm-command install com.lunarg.vulkan.core com.lunarg.vulkan.usr com.lunarg.vulkan.ios com.lunarg.vulkan.dxc
+        cd ~/VulkanSDK/1.4.304.0
+        sudo ./install_vulkan.py
+
+    - name: Verify Vulkan
+      id: check-vulkan
+      continue-on-error: true
+      run: vulkaninfo
+
     - name: Create Build Environment
       run: cmake -E make_directory ${{github.workspace}}/build
 
@@ -57,6 +71,7 @@ jobs:
         -G "Xcode" -T "LLVM"
         -DCMAKE_BUILD_TYPE=${{matrix.configuration}}
         -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+        -DKNOODLE_WITH_VULKAN=${{ steps.check-vulkan.outcome == 'success' && 'ON' || 'OFF' }}
 
     - name: Build
       working-directory: ${{github.workspace}}/build

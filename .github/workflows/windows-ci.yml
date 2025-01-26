@@ -38,6 +38,19 @@ jobs:
       with:
         submodules: recursive
 
+    - name: Setup Vulkan SDK
+      shell: powershell
+      run: |
+        curl -o VulkanSDK-Installer.exe https://sdk.lunarg.com/sdk/download/1.4.304.0/windows/VulkanSDK-1.4.304.0-Installer.exe
+        .\VulkanSDK-Installer.exe --accept-licenses --default-answer --confirm-command install
+
+    - name: Verify Vulkan
+      id: check-vulkan
+      continue-on-error: true
+      run: |
+        vulkaninfoSDK
+        del VulkanSDK-Installer.exe
+
     - name: Create Build Environment
       run: cmake -E make_directory ${{github.workspace}}/build
 
@@ -49,6 +62,7 @@ jobs:
         -B "${{github.workspace}}/build"
         -G "Visual Studio 17 2022" -A x64
         -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+        -DKNOODLE_WITH_VULKAN=${{ steps.check-vulkan.outcome == 'success' && 'ON' || 'OFF' }}
 
     - name: Build
       working-directory: ${{github.workspace}}/build

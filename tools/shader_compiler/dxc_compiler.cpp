@@ -27,70 +27,126 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#include <filesystem>
+#include <fstream>
+#include "log/log.hpp"
+#include "shader_compiler_structures.hpp"
+
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <atlbase.h>
 #include <windows.h>
+#else
+#define __EMULATE_UUID 1
+#endif
 
 #include <dxc/dxcapi.h>
-#include <wrl.h>
-#include <cerrno>
-#include <cstdint>
-#include <iostream>
-
-using namespace Microsoft::WRL;
 
 namespace kn {
-bool compile() {
-  ComPtr<IDxcUtils> pUtils;
-  ComPtr<IDxcCompiler3> pCompiler;
+
+std::wstring convertToWideString(const char* str) {
+  std::wstring wstr;
+
+  std::mbstate_t state = std::mbstate_t();
+  std::size_t len = 1 + std::mbsrtowcs(nullptr, &str, 0, &state);
+  wstr.resize(len);
+  std::mbsrtowcs(&wstr[0], &str, wstr.size(), &state);
+  return wstr;
+}
+
+bool compile(const ShaderCompileHeader& shaderHeader) {
+  CComPtr<IDxcUtils> pUtils = nullptr;
+  CComPtr<IDxcCompiler3> pCompiler = nullptr;
 
   DxcCreateInstance(CLSID_DxcUtils, IID_PPV_ARGS(&pUtils));
   DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&pCompiler));
 
-  ComPtr<IDxcIncludeHandler> pIncludeHandler;
+  CComPtr<IDxcIncludeHandler> pIncludeHandler;
   pUtils->CreateDefaultIncludeHandler(&pIncludeHandler);
 
-  LPCWSTR pszArgs[] = {L"D:/Dev/myshader.hlsl", L"-spirv", L"-E", L"main", L"-T", L"ps_6_0", L"-Fo",
-                       L"D:/Dev/myshader.spv"};
+  std::wstring Filename = shaderHeader.Input.wstring();
+  std::wstring OutputFilename = std::filesystem::path(shaderHeader.Output).replace_extension("spv").wstring();
 
-  ComPtr<IDxcBlobEncoding> pSource = nullptr;
-  pUtils->LoadFile(L"D:/Dev/myshader.hlsl", nullptr, &pSource);
+  std::vector<LPCWSTR> Args = {
+      Filename.c_str(), L"-spirv", L"-fvk-use-dx-layout", L"-fspv-reflect", L"-fspv-target-env=vulkan1.1", L"-O3"};
+
+  if (shaderHeader.Target.starts_with("vs")) {
+    Args.push_back(L"-fvk-use-dx-position-w");
+    Args.push_back(L"-fvk-invert-y");
+  }
+
+  std::wstring WideEntry;
+  if (!shaderHeader.Entry.empty()) {
+    Args.push_back(L"-E");
+    WideEntry = convertToWideString(shaderHeader.Entry.c_str());
+    Args.push_back(WideEntry.c_str());
+  }
+
+  std::wstring WideTarget = convertToWideString(shaderHeader.Target.c_str());
+  if (!shaderHeader.Target.empty()) {
+    Args.push_back(L"-T");
+    WideTarget = convertToWideString(shaderHeader.Target.c_str());
+    Args.push_back(WideTarget.c_str());
+  }
+
+  Args.push_back(L"-Fo");
+  Args.push_back(OutputFilename.c_str());
+
+  std::vector<std::wstring> WideArgs;
+  for (const auto& ShaderArg : shaderHeader.Args) {
+    WideArgs.push_back(convertToWideString(ShaderArg.c_str()));
+  }
+
+  for (const auto& WideArg : WideArgs) {
+    Args.push_back(L"-D");
+    Args.push_back(WideArg.c_str());
+  }
+
+  CComPtr<IDxcBlobEncoding> pSource = nullptr;
+  pUtils->LoadFile(Filename.c_str(), nullptr, &pSource);
   DxcBuffer Source;
-  Source.Ptr = pSource->GetBufferPointer();
-  Source.Size = pSource->GetBufferSize();
-  Source.Encoding = DXC_CP_ACP;
 
-  ComPtr<IDxcResult> pResults;
+  if (pSource->GetBufferSize()) {
+    Source.Ptr = pSource->GetBufferPointer();
+    Source.Size = pSource->GetBufferSize();
+    Source.Encoding = DXC_CP_ACP;
+  }
+
+  CComPtr<IDxcResult> pResults;
   pCompiler->Compile(&Source,                 // Source buffer.
-                     pszArgs,                 // Array of pointers to arguments.
-                     _countof(pszArgs),       // Number of arguments.
-                     pIncludeHandler.Get(),   // User-provided interface to handle #include directives (optional).
+                     Args.data(),             // Array of pointers to arguments.
+                     Args.size(),             // Number of arguments.
+                     pIncludeHandler,         // User-provided interface to handle #include directives (optional).
                      IID_PPV_ARGS(&pResults)  // Compiler output status, buffer, and errors.
   );
 
-  ComPtr<IDxcBlobUtf8> pErrors = nullptr;
+  CComPtr<IDxcBlobUtf8> pErrors = nullptr;
   pResults->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&pErrors), nullptr);
 
   if (pErrors != nullptr && pErrors->GetStringLength() != 0) {
-    std::cerr << pErrors->GetStringPointer() << std::endl;
-    return false;
+    KN_LOG(LogDxc, Error, "{}", pErrors->GetStringPointer());
   }
 
   HRESULT hrStatus;
   pResults->GetStatus(&hrStatus);
   if (FAILED(hrStatus)) {
-    wprintf(L"Compilation Failed\n");
+    KN_LOG(LogDxc, Error, "Compilation Failed");
     return false;
   }
 
-  ComPtr<IDxcBlob> pShader = nullptr;
-  ComPtr<IDxcBlobUtf16> pShaderName = nullptr;
+  CComPtr<IDxcBlob> pShader = nullptr;
+  CComPtr<IDxcBlobWide> pShaderName = nullptr;
   pResults->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&pShader), &pShaderName);
   if (pShader != nullptr) {
-    FILE* fp = NULL;
-    _wfopen_s(&fp, pShaderName->GetStringPointer(), L"wb");
-    if (fp) {
-      fwrite(pShader->GetBufferPointer(), pShader->GetBufferSize(), 1, fp);
-      fclose(fp);
+    const std::filesystem::path outputPath = pShaderName->GetStringPointer();
+    std::ofstream out(outputPath, std::ios::binary);
+    if (!out.is_open()) {
+      KN_LOG(LogDxc, Error, "Failed to open file {}", outputPath.string());
+      return false;
     }
+
+    out.write(reinterpret_cast<const char*>(pShader->GetBufferPointer()), pShader->GetBufferSize());
+    out.close();
   }
 
   return true;

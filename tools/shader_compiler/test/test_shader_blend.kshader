@@ -1,0 +1,448 @@
+/**************************************************************************/
+/* version.hpp                                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                                Knoodle                                 */
+/*                        https://knoodlegraph.org                        */
+/**************************************************************************/
+/* Copyright (c) 2025 Knoodle contributors (vide AUTHORS.md)              */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
+
+/**************************************************************************/
+/* Utils                                                                  */
+/**************************************************************************/
+
+// RGBtoHSL
+float4 RGBtoHSL(float4 color)
+{
+	// TODO: Implement
+	return color;
+}
+
+// HSLtoRGB
+float4 HSLtoRGB(float4 hsl)
+{
+	// TODO: Implement
+	return hsl;
+}
+
+struct PSInput
+{
+	[[vk::location(0)]] float4 Position : SV_POSITION;
+	[[vk::location(1)]] float4 TexCoord : TEXCOORD0; // x,y = uv; zw = dimensions
+};
+
+struct PSOutput
+{
+	float4 Color : SV_TARGET;
+};
+
+Texture2D<float4> TextureA : register(t0);
+
+Texture2D<float4> TextureB : register(t1);
+
+SamplerState TextureASampler : register(s0);
+SamplerState TextureBSampler : register(s1);
+
+/**************************************************************************/
+/* Normal blend                                                           */
+/**************************************************************************/
+
+PSOutput normalBlend(PSInput input)
+{
+	PSOutput Output;
+	float4 Target = TextureA.Sample(TextureASampler, input.TexCoord.xy);
+	float4 Blend = TextureB.Sample(TextureBSampler, input.TexCoord.xy);
+	Output.Color.rgb = Target.rgb * Target.a + Blend.rgb * (1.0f - Target.a);
+	Output.Color.a = min(1.0, Target.a + Blend.a);
+	return Output;
+}
+
+/**************************************************************************/
+/* Darken blend                                                           */
+/**************************************************************************/
+
+PSOutput darkenBlend(PSInput input)
+{
+	PSOutput Output;
+	float4 Target = TextureA.Sample(TextureASampler, input.TexCoord.xy);
+	float4 Blend = TextureB.Sample(TextureBSampler, input.TexCoord.xy);
+	Output.Color = min(Target, Blend);
+	return Output;
+}
+
+/**************************************************************************/
+/* Multiply blend                                                         */
+/**************************************************************************/
+
+PSOutput multiplyBlend(PSInput input)
+{
+	PSOutput Output;
+	float4 Target = TextureA.Sample(TextureASampler, input.TexCoord.xy);
+	float4 Blend = TextureB.Sample(TextureBSampler, input.TexCoord.xy);
+	Output.Color = Target * Blend;
+	return Output;
+}
+
+/**************************************************************************/
+/* Color burn blend                                                       */
+/**************************************************************************/
+
+PSOutput colorBurnBlend(PSInput input)
+{
+	PSOutput Output;
+	float4 Target = TextureA.Sample(TextureASampler, input.TexCoord.xy);
+	float4 Blend = TextureB.Sample(TextureBSampler, input.TexCoord.xy);
+	Output.Color = 1.0f - (1.0f - Target) / Blend;
+	return Output;
+}
+
+/**************************************************************************/
+/* Linear burn blend                                                      */
+/**************************************************************************/
+
+PSOutput linearBurnBlend(PSInput input)
+{
+	PSOutput Output;
+	float4 Target = TextureA.Sample(TextureASampler, input.TexCoord.xy);
+	float4 Blend = TextureB.Sample(TextureBSampler, input.TexCoord.xy);
+	Output.Color = Target + Blend - 1.0f;
+	return Output;
+}
+
+/**************************************************************************/
+/* Lighten blend                                                          */
+/**************************************************************************/
+
+PSOutput lightenBlend(PSInput input)
+{
+	PSOutput Output;
+	float4 Target = TextureA.Sample(TextureASampler, input.TexCoord.xy);
+	float4 Blend = TextureB.Sample(TextureBSampler, input.TexCoord.xy);
+	Output.Color = max(Target, Blend);
+	return Output;
+}
+
+/**************************************************************************/
+/* Screen blend                                                           */
+/**************************************************************************/
+
+PSOutput screenBlend(PSInput input)
+{
+	PSOutput Output;
+	float4 Target = TextureA.Sample(TextureASampler, input.TexCoord.xy);
+	float4 Blend = TextureB.Sample(TextureBSampler, input.TexCoord.xy);
+	Output.Color = 1.0f - (1.0f - Target) * (1.0f - Blend);
+	return Output;
+}
+
+/**************************************************************************/
+/* Color dodge blend                                                      */
+/**************************************************************************/
+
+PSOutput colorDodgeBlend(PSInput input)
+{
+	PSOutput Output;
+	float4 Target = TextureA.Sample(TextureASampler, input.TexCoord.xy);
+	float4 Blend = TextureB.Sample(TextureBSampler, input.TexCoord.xy);
+	Output.Color = Target / (1.0f - Blend);
+	return Output;
+}
+
+/**************************************************************************/
+/* Linear dodge blend                                                     */
+/**************************************************************************/
+
+PSOutput linearDodgeBlend(PSInput input)
+{
+	PSOutput Output;
+	float4 Target = TextureA.Sample(TextureASampler, input.TexCoord.xy);
+	float4 Blend = TextureB.Sample(TextureBSampler, input.TexCoord.xy);
+	Output.Color = Target + Blend;
+	return Output;
+}
+
+/**************************************************************************/
+/* Overlay blend                                                          */
+/**************************************************************************/
+
+PSOutput overlayBlend(PSInput input)
+{
+	PSOutput Output;
+	float4 Target = TextureA.Sample(TextureASampler, input.TexCoord.xy);
+	float4 Blend = TextureB.Sample(TextureBSampler, input.TexCoord.xy);
+	Output.Color = (Target > 0.5) * (1 - (1 - 2 * (Target - 0.5)) * (1 - Blend)) + (Target <= 0.5) * ((2 * Target) * Blend);
+	return Output;
+}
+
+/**************************************************************************/
+/* Soft light blend                                                       */
+/**************************************************************************/
+
+PSOutput softLightBlend(PSInput input)
+{
+	PSOutput Output;
+	float4 Target = TextureA.Sample(TextureASampler, input.TexCoord.xy);
+	float4 Blend = TextureB.Sample(TextureBSampler, input.TexCoord.xy);
+	Output.Color = (Blend > 0.5) * (1 - (1 - Target) * (1 - (Blend - 0.5))) + (Blend <= 0.5) * (Target * (Blend + 0.5));
+	return Output;
+}
+
+/**************************************************************************/
+/* Hard light blend                                                       */
+/**************************************************************************/
+
+PSOutput hardLightBlend(PSInput input)
+{
+	PSOutput Output;
+	float4 Target = TextureA.Sample(TextureASampler, input.TexCoord.xy);
+	float4 Blend = TextureB.Sample(TextureBSampler, input.TexCoord.xy);
+	Output.Color = (Blend > 0.5) * (1 - (1 - Target) * (1 - 2 * (Blend - 0.5))) + (Blend <= 0.5) * (Target * (2 * Blend));
+	return Output;
+}
+
+/**************************************************************************/
+/* Vivid light blend                                                      */
+/**************************************************************************/
+
+PSOutput vividLightBlend(PSInput input)
+{
+	PSOutput Output;
+	float4 Target = TextureA.Sample(TextureASampler, input.TexCoord.xy);
+	float4 Blend = TextureB.Sample(TextureBSampler, input.TexCoord.xy);
+	Output.Color = (Blend > 0.5) * (1 - (1 - Target) / (2 * (Blend - 0.5))) + (Blend <= 0.5) * (Target / (1 - 2 * Blend));
+	return Output;
+}
+
+/**************************************************************************/
+/* Linear light blend                                                     */
+/**************************************************************************/
+
+PSOutput linearLightBlend(PSInput input)
+{
+	PSOutput Output;
+	float4 Target = TextureA.Sample(TextureASampler, input.TexCoord.xy);
+	float4 Blend = TextureB.Sample(TextureBSampler, input.TexCoord.xy);
+	Output.Color = (Blend > 0.5) * (Target + 2 * (Blend - 0.5)) + (Blend <= 0.5) * (Target + 2 * Blend - 1);
+	return Output;
+}
+
+/**************************************************************************/
+/* Pin light blend                                                        */
+/**************************************************************************/
+
+PSOutput pinLightBlend(PSInput input)
+{
+	PSOutput Output;
+	float4 Target = TextureA.Sample(TextureASampler, input.TexCoord.xy);
+	float4 Blend = TextureB.Sample(TextureBSampler, input.TexCoord.xy);
+	Output.Color = (Blend > 0.5) * max(Target, 2 * (Blend - 0.5)) + (Blend <= 0.5) * min(Target, 2 * Blend);
+	return Output;
+}
+
+/**************************************************************************/
+/* Difference                                                             */
+/**************************************************************************/
+
+PSOutput differenceBlend(PSInput input)
+{
+	PSOutput Output;
+	float4 Target = TextureA.Sample(TextureASampler, input.TexCoord.xy);
+	float4 Blend = TextureB.Sample(TextureBSampler, input.TexCoord.xy);
+	Output.Color = abs(Target - Blend);
+	return Output;
+}
+
+/**************************************************************************/
+/* Exclusion                                                              */
+/**************************************************************************/
+
+PSOutput exclusionBlend(PSInput input)
+{
+	PSOutput Output;
+	float4 Target = TextureA.Sample(TextureASampler, input.TexCoord.xy);
+	float4 Blend = TextureB.Sample(TextureBSampler, input.TexCoord.xy);
+	Output.Color = 0.5 - 2 * (Target - 0.5) * (Blend - 0.5);
+	return Output;
+}
+
+/**************************************************************************/
+/* Subtract                                                               */
+/**************************************************************************/
+
+PSOutput subtractBlend(PSInput input)
+{
+	PSOutput Output;
+	float4 Target = TextureA.Sample(TextureASampler, input.TexCoord.xy);
+	float4 Blend = TextureB.Sample(TextureBSampler, input.TexCoord.xy);
+	Output.Color = max(0, Target - Blend);
+	return Output;
+}
+
+/**************************************************************************/
+/* Divide                                                                 */
+/**************************************************************************/
+
+PSOutput divideBlend(PSInput input)
+{
+	PSOutput Output;
+	float4 Target = TextureA.Sample(TextureASampler, input.TexCoord.xy);
+	float4 Blend = TextureB.Sample(TextureBSampler, input.TexCoord.xy);
+	Output.Color = Target / Blend;
+	return Output;
+}
+
+/**************************************************************************/
+/* Hue                                                                    */
+/**************************************************************************/
+
+PSOutput hueBlend(PSInput input)
+{
+	PSOutput Output;
+	float4 Target = TextureA.Sample(TextureASampler, input.TexCoord.xy);
+	float4 Blend = TextureB.Sample(TextureBSampler, input.TexCoord.xy);
+	float4 TargetHSL = RGBtoHSL(Target);
+	float4 BlendHSL = RGBtoHSL(Blend);
+	Output.Color = HSLtoRGB(float4(BlendHSL.r, TargetHSL.g, TargetHSL.b, TargetHSL.a));
+	return Output;
+}
+
+/**************************************************************************/
+/* Saturation                                                             */
+/**************************************************************************/
+
+PSOutput saturationBlend(PSInput input)
+{
+	PSOutput Output;
+	float4 Target = TextureA.Sample(TextureASampler, input.TexCoord.xy);
+	float4 Blend = TextureB.Sample(TextureBSampler, input.TexCoord.xy);
+	float4 TargetHSL = RGBtoHSL(Target);
+	float4 BlendHSL = RGBtoHSL(Blend);
+	Output.Color = HSLtoRGB(float4(TargetHSL.r, BlendHSL.g, TargetHSL.b, TargetHSL.a));
+	return Output;
+}
+
+/**************************************************************************/
+/* Color                                                                  */
+/**************************************************************************/
+
+PSOutput colorBlend(PSInput input)
+{
+	PSOutput Output;
+	float4 Target = TextureA.Sample(TextureASampler, input.TexCoord.xy);
+	float4 Blend = TextureB.Sample(TextureBSampler, input.TexCoord.xy);
+	float4 TargetHSL = RGBtoHSL(Target);
+	float4 BlendHSL = RGBtoHSL(Blend);
+	Output.Color = HSLtoRGB(float4(BlendHSL.r, BlendHSL.g, TargetHSL.b, TargetHSL.a));
+	return Output;
+}
+
+/**************************************************************************/
+/* Luminosity                                                             */
+/**************************************************************************/
+
+PSOutput luminosityBlend(PSInput input)
+{
+	PSOutput Output;
+	float4 Target = TextureA.Sample(TextureASampler, input.TexCoord.xy);
+	float4 Blend = TextureB.Sample(TextureBSampler, input.TexCoord.xy);
+	float4 TargetHSL = RGBtoHSL(Target);
+	float4 BlendHSL = RGBtoHSL(Blend);
+	Output.Color = HSLtoRGB(float4(BlendHSL.r, BlendHSL.g, TargetHSL.b, TargetHSL.a));
+	return Output;
+}
+
+/**************************************************************************/
+/* Shader configuration                                                   */
+/**************************************************************************/
+
+---
+- entry: normalBlend
+  target: ps_5_0
+
+- entry: darkenBlend
+  target : ps_5_0
+
+- entry: multiplyBlend
+  target : ps_5_0
+
+- entry: colorBurnBlend
+  target : ps_5_0
+
+- entry: linearBurnBlend
+  target : ps_5_0
+
+- entry: lightenBlend
+  target : ps_5_0
+
+- entry: screenBlend
+  target : ps_5_0
+
+- entry: colorDodgeBlend
+  target : ps_5_0
+
+- entry: linearDodgeBlend
+  target : ps_5_0
+
+- entry: overlayBlend
+  target : ps_5_0
+
+- entry: softLightBlend
+  target : ps_5_0
+
+- entry: hardLightBlend
+  target : ps_5_0
+
+- entry: vividLightBlend
+  target : ps_5_0
+
+- entry: linearLightBlend
+  target : ps_5_0
+
+- entry: pinLightBlend
+  target : ps_5_0
+
+- entry: differenceBlend
+  target : ps_5_0
+
+- entry: exclusionBlend
+  target : ps_5_0
+
+- entry: subtractBlend
+  target : ps_5_0
+
+- entry: divideBlend
+  target : ps_5_0
+
+- entry: hueBlend
+  target : ps_5_0
+
+- entry: saturationBlend
+  target : ps_5_0
+
+- entry: colorBlend
+  target : ps_5_0
+
+- entry: luminosityBlend
+  target : ps_5_0
+
+...

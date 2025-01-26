@@ -1,3 +1,5 @@
+message(STATUS "Vulkan env: $ENV{VULKAN_SDK}")
+
 find_package(Vulkan REQUIRED)
 
 add_library(vulkan-ghi SHARED)
@@ -6,8 +8,6 @@ knoodle_setup_module(
   TARGET vulkan-ghi
   API KN_VULKAN_API
   PRIVATE_DEPENDS core ghi Vulkan::Vulkan)
-
-option(KN_VULKAN_DEBUG "Enable Vulkan debug" OFF)
 
 target_sources(vulkan-ghi
   PRIVATE
